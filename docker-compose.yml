@@ -1,0 +1,14 @@
+version: "2"
+services:
+  web:
+    image: node
+    ports:
+      - "3000:3000"
+    links:
+      - mongo
+  mongo:
+    image: mysql
+    volumes:
+        - /data/mongodb/db:/data/db
+    ports:
+      - "27017:27017"
