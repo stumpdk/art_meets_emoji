@@ -66,22 +66,22 @@ module.exports = {
     getRelatedImages: function(userId, cb){
             pool.query({
 
-            }), function(error, result, fields){
+            }, function(error, result, fields){
 
             });
     },
 
     getImage: function(userId, cb){
         pool.query({
-            sql: 'select id, image_url from art limit 100;',
+            sql: 'select id, image_url from art limit 100',
         }, function(error, result, fields){
             if(error) throw error;
 
-            var randomId = Math.rand(0, result.length-1);
+            var randomId = Math.floor(Math.random() * result.length-1) + 1;
 
-            cb(result[randomId]);
+            cb(result[0]);
         });
-    }
+    },
     searchImagesByText: function(userId, text, cb){
         pool.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
           if (error) throw error;

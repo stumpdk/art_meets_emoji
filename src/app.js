@@ -52,7 +52,7 @@ app.get('/', function(req, res) {
 
 // Message processing
 app.post('/webhook', function(req, res) {
-    console.log(req.body);
+    console.warn('got request');
     var data = req.body;
 
     // Make sure this is a page subscription
@@ -87,7 +87,7 @@ app.post('/webhook', function(req, res) {
         res.sendStatus(200);
     }
     //All went kind of well, even if we dont support other types of requests than pages
-    res.sendStatus(200);
+    //res.sendStatus(200);
 });
 
 app.post('/subscribe', function(req, res){
@@ -141,7 +141,7 @@ function receivedMessage(event) {
     var timeOfMessage = event.timestamp;
     var message = event.message;
 
-    console.error("Received message for user %d and page %d at %d with message:",
+    console.warn("Received message for user %d and page %d at %d with message:",
         senderID, recipientID, timeOfMessage);
 //    console.log(JSON.stringify(message));
 
@@ -154,25 +154,32 @@ function receivedMessage(event) {
         // If we receive a text message, check to see if it matches a keyword
         // and send back the template example. Otherwise, just echo the text we received.
         switch (messageText) {
-            case 'generic':
+            /*case 'generic':
                 sendGenericMessage(senderID);
-                break;
-            case 'image':
+                break;*/
+            case 'picture':
                 console.error(messageText);
+                //getAssetsByText(senderID, messageText);
                 sendImageMessage(senderID);
+                break;
+            case 'text':
+                sendTextMessage(senderID, 'hej');
+                break;
             default:
-                sendImageMessage(senderID);
+                sendTextMessage(senderID, 'hej');
+                //sendImageMessage(senderID);
+                break;
                 //getAssetsByText(senderID, messageText);
         }
     } else if (messageAttachments) {
-        sendTextMessage(senderID, "Message with attachment received");
+//        sendTextMessage(senderID, "Message with attachment received");
     }
 }
 
 function getAssetsByText(userId, text){
-    db.searchImagesByText(text, outputData);
+    db.searchImagesByText(userId, text, outputData);
 
-    function outputData(result){
+    var outputData = function (result){
         res.send(JSON.stringify(results));
     }
 }
@@ -212,6 +219,7 @@ function sendTextMessage(recipientId, messageText) {
 }
 
 function sendImageMessage(recipientId){
+
     var messageData = {
         recipient: {
             id: recipientId
@@ -222,11 +230,19 @@ function sendImageMessage(recipientId){
           payload:{
             url:"http://www.smk.dk/fileadmin/user_upload/Billeder/besoeg-museet/Kalender/2017/Oktober/KN_singleview1.jpg"
             }
-            }
+        }
         }
     };
+console.warn(messageData, recipientId);
+    db.getImage(recipientId, sendPayloadWithImage);
 
-    callSendAPI(messageData);
+    function sendPayloadWithImage(image){
+        messageData.message.attachment.payload.url = image.image_url;
+        console.warn(image);
+        callSendAPI(messageData);
+    };
+
+    //callSendAPI(messageData);
 }
 
 /*
@@ -281,11 +297,10 @@ function callSendAPI(messageData) {
     request({
         uri: 'https://graph.facebook.com/v2.6/me/messages',
         qs: {
-            access_token: process.env.PAGE_ACCESS_TOKEN
+            access_token: 'EAACEbCg3NhYBAOuIhp8swnm8HvAZCKh7PdqGIpd17hiS9lJEqdd6D20tI6sX9ZBGBRRCuKW3JrMMOZADtkjjrDKza9OoZCu2ZAZCFAHTUvVMHcusT8aau15zq5QXqbxUh2G7oRUUOwXxmjJyWdDYD5N19cHm9fsea1ZAWqZASjO8rwZDZD'
         },
         method: 'POST',
-        json: messageData
-
+        json: messageData,
     }, function(error, response, body) {
         if (!error && response.statusCode == 200) {
             var recipientId = body.recipient_id;
@@ -302,9 +317,9 @@ function callSendAPI(messageData) {
 }
 
 //Send images to recipients every 24 hours (or so)
-var j = schedule.scheduleJob('* * * * *', function(){
+/*var j = schedule.scheduleJob('* * * * *', function(){
   console.log('Sending messages for recipients now!');
-});
+});*/
 
 // Set Express to listen out for HTTP requests
 var server = app.listen(process.env.PORT || 3000, function() {
