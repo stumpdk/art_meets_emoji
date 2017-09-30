@@ -66,7 +66,7 @@ app.post('/webhook', function(req, res) {
             // Iterate over each messaging event
             entry.messaging.forEach(function(event) {
                 if (event.message) {
-                    receivedMessage(event);
+                    cleareceivedMessage(event);
                     console.error("received message",event);
                 } else if (event.postback) {
                     //receivedPostback(event);
@@ -228,7 +228,7 @@ function sendImageMessage(recipientId){
         attachment:{
           type:"image",
           payload:{
-            url:"http://www.smk.dk/fileadmin/user_upload/Billeder/besoeg-museet/Kalender/2017/Oktober/KN_singleview1.jpg"
+            url:image_url
             }
         }
         }
