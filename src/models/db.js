@@ -68,7 +68,7 @@ module.exports = {
 
             }, function(error, result, fields){
 
-            };
+            });
     },
 
     getImage: function(userId, cb){
