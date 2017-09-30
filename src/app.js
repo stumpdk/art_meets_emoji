@@ -150,7 +150,8 @@ function receivedMessage(event) {
                 console.error(messageText);
                 sendImageMessage(senderID);
             default:
-                getAssetsByText(senderID, messageText);
+                sendImageMessage(senderID);
+                //getAssetsByText(senderID, messageText);
         }
     } else if (messageAttachments) {
         sendTextMessage(senderID, "Message with attachment received");
