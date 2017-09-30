@@ -166,10 +166,10 @@ function receivedMessage(event) {
                 sendTextMessage(senderID, 'hej');
                 break;
             default:
-                sendTextMessage(senderID, 'hej');
+//                sendTextMessage(senderID, 'hej');
                 //sendImageMessage(senderID);
+                getAssetsByText(senderID, messageText);
                 break;
-                //getAssetsByText(senderID, messageText);
         }
     } else if (messageAttachments) {
 //        sendTextMessage(senderID, "Message with attachment received");
@@ -181,7 +181,12 @@ function getAssetsByText(recipientId, text){
     console.log("sending assets by text");
 
     function outputData(result){
-        sendImageMessage(recipientId,result[0]);
+        if(result[0]){
+            sendImageMessage(recipientId,result[0]);
+        }
+        else{
+            sendTextMessage(recipientId, 'Sorry, couldnt find anything');
+        }
     }
 }
 
