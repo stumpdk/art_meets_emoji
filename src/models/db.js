@@ -68,18 +68,19 @@ module.exports = {
 
             }, function(error, result, fields){
 
-            };
+            });
     },
 
     getImage: function(userId, cb){
+        console.warn('searching for images');
         pool.query({
-            sql: 'select id, image_url from art limit 100',
+            sql: 'select id, image_url from art limit 5000',
         }, function(error, result, fields){
             if(error) throw error;
 
             var randomId = Math.floor(Math.random() * result.length-1) + 1;
 
-            cb(result[0]);
+            cb(result[randomId]);
         });
     },
 

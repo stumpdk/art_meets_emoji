@@ -66,7 +66,7 @@ app.post('/webhook', function(req, res) {
             // Iterate over each messaging event
             entry.messaging.forEach(function(event) {
                 if (event.message) {
-                    cleareceivedMessage(event);
+                    receivedMessage(event);
                     console.error("received message",event);
                 } else if (event.postback) {
                     //receivedPostback(event);
@@ -228,7 +228,7 @@ function sendImageMessage(recipientId){
         attachment:{
           type:"image",
           payload:{
-            url:image_url
+            url:undefined
             }
         }
         }
