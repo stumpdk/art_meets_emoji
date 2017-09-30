@@ -49,12 +49,13 @@ app.get('/', function(req, res) {
 app.post('/webhook', function(req, res) {
     console.log(req.body);
     var data = req.body;
-
+    console.log('her er data', data);
     // Make sure this is a page subscription
     if (data.object === 'page') {
 
         // Iterate over each entry - there may be multiple if batched
         data.entry.forEach(function(entry) {
+            console.log('inside entry loop');
             var pageID = entry.id;
             var timeOfEvent = entry.time;
 
@@ -69,7 +70,7 @@ app.post('/webhook', function(req, res) {
                 }
             });
         });
-
+        console.log('all went well');
         // Assume all went well.
         //
         // You must send back a 200, within 20 seconds, to let us know
@@ -77,6 +78,7 @@ app.post('/webhook', function(req, res) {
         // will time out and we will keep trying to resend.
         res.sendStatus(200);
     }
+    console.log('data.object wasn\'t a page');
 });
 
 // Incoming events handling

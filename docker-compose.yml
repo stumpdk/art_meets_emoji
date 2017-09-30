@@ -5,10 +5,15 @@ services:
     ports:
       - "3000:3000"
     links:
-      - mongo
-  mongo:
+      - db
+  db:
     image: mysql
     volumes:
-        - /data/mongodb/db:/data/db
+        - /db_init:/docker-entrypoint-initdb.d
     ports:
       - "27017:27017"
+    environment:
+        MYSQL_ROOT_PASSWORD: example
+        MYSQL_DATABASE: art_meets_emoji
+        MYSQL_USER: user
+        MYSQL_PASSWORD: pass
