@@ -176,11 +176,12 @@ function receivedMessage(event) {
     }
 }
 
-function getAssetsByText(userId, text){
-    db.searchImagesByText(userId, text, outputData);
+function getAssetsByText(recipientId, text){
+    db.searchImagesByText(recipientId,text, outputData);
+    console.log("sending assets by text");
 
-    var outputData = function (result){
-        res.send(JSON.stringify(results));
+    function outputData(result){
+        sendImageMessage(recipientId,result[0]);
     }
 }
 
@@ -218,31 +219,26 @@ function sendTextMessage(recipientId, messageText) {
     callSendAPI(messageData);
 }
 
-function sendImageMessage(recipientId){
-
+function sendImageMessage(recipientId,image_data){
     var messageData = {
         recipient: {
             id: recipientId
         },
-        message:{
-        attachment:{
-          type:"image",
-          payload:{
-            url:undefined
+        message: {
+            attachment: {
+                type: "template",
+                payload: {
+                    template_type: "generic",
+                    elements: [{
+                        title: "image",
+                        subtitle: image_data.title,
+                        image_url: image_data.image_url
+                    }]
+                }
             }
         }
-        }
     };
-console.warn(messageData, recipientId);
-    db.getImage(recipientId, sendPayloadWithImage);
-
-    function sendPayloadWithImage(image){
-        messageData.message.attachment.payload.url = image.image_url;
-        console.warn(image);
-        callSendAPI(messageData);
-    };
-
-    //callSendAPI(messageData);
+    callSendAPI(messageData);
 }
 
 /*
