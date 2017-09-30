@@ -66,7 +66,7 @@ app.post('/webhook', function(req, res) {
             // Iterate over each messaging event
             entry.messaging.forEach(function(event) {
                 if (event.message) {
-                    receivedMessage(event);
+                    cleareceivedMessage(event);
                     console.error("received message",event);
                 } else if (event.postback) {
                     //receivedPostback(event);
@@ -155,21 +155,23 @@ function receivedMessage(event) {
                 break;
             case 'image':
                 console.error(messageText);
-                sendImageMessage(senderID);
+                sendImageMessage(senderID,"http://www.smk.dk/fileadmin/user_upload/Billeder/besoeg-museet/Kalender/2017/Oktober/KN_singleview1.jpg");
+                break;
             default:
-                sendImageMessage(senderID);
-                //getAssetsByText(senderID, messageText);
+                getAssetsByText(senderID, messageText);
         }
     } else if (messageAttachments) {
         sendTextMessage(senderID, "Message with attachment received");
     }
 }
 
-function getAssetsByText(userId, text){
+function getAssetsByText(recipientId, text){
     db.searchImagesByText(text, outputData);
+    console.log("sending asset by text");
 
     function outputData(result){
-        res.send(JSON.stringify(results));
+        json = JSON.stringify(result);
+        sendImageMessage(recipientId,json[0].image_url);
     }
 }
 
@@ -207,7 +209,7 @@ function sendTextMessage(recipientId, messageText) {
     callSendAPI(messageData);
 }
 
-function sendImageMessage(recipientId){
+function sendImageMessage(recipientId,image_url){
     var messageData = {
         recipient: {
             id: recipientId
@@ -216,7 +218,7 @@ function sendImageMessage(recipientId){
         attachment:{
           type:"image",
           payload:{
-            url:"http://www.smk.dk/fileadmin/user_upload/Billeder/besoeg-museet/Kalender/2017/Oktober/KN_singleview1.jpg"
+            url:image_url
             }
             }
         }
