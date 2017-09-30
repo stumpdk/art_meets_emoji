@@ -3,7 +3,7 @@ var mysql = require('mysql');
 var pool  = mysql.createPool({
   connectionLimit : 10,
   host            : 'localhost',
-  port            : 3306,
+  port            : 3307,
   user            : 'root',
   password        : 'example',
   database        : 'art_meets_emoji'
@@ -16,7 +16,7 @@ module.exports = {
 
         function getSubscriber(userId, cb){
             pool.query({
-                sql: 'select user_id, enabled from subscriptions where user_id = ?',
+                sql: 'select id, enabled from user where id = ?',
                 values : [userId]
             }, function(error, results, fields){
                 if (error) throw error;
@@ -36,7 +36,7 @@ module.exports = {
 
         function updateSubscriber(userId, status, cb){
             pool.query({
-                sql: 'update subscriptions set enabled = ?, subscription_date = NOW() WHERE user_id = ?',
+                sql: 'update user set enabled = ?, subscription_date = NOW() WHERE id = ?',
                 values: [status, userId]
             }, function(error, result, fields){
                 if (error) throw error;
@@ -45,7 +45,7 @@ module.exports = {
 
         function addNewSubscriber(userId){
             pool.query({
-                sql: 'insert into subscriptions (user_id, enabled, subscription_date) VALUES (?, 1, NOW())',
+                sql: 'insert into user (id, enabled, subscription_date) VALUES (?, 1, NOW())',
                 values: [userId]
             }, function(error, result, fields){
                 if (error) throw error;
@@ -55,7 +55,7 @@ module.exports = {
 
     unsubscribeUser: function(userId, reason, cb){
         pool.query({
-            sql: 'update subscriptions set enabled = 0, reason = ? WHERE user_id = ?',
+            sql: 'update user set enabled = 0, reason = ? WHERE id = ?',
             values: [reason, userId]
         }, function(error, result, fields){
             if (error) throw error;
@@ -68,7 +68,7 @@ module.exports = {
 
             }), function(error, result, fields){
 
-            });
+            };
     },
 
     getImage: function(userId, cb){
@@ -81,13 +81,23 @@ module.exports = {
 
             cb(result[randomId]);
         });
-    }
-    searchImagesByText: function(userId, text, cb){
-        pool.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
-          if (error) throw error;
-          console.log('The solution is: ', results[0]);
+    },
 
-          cb(results);
+    searchImagesByText: function(userId, text, cb) {
+        pool.query({
+            sql: 'SELECT DISTINCT art.id,art.title,art.image_url,art.creation_date FROM art ' +
+            'JOIN art_author ON art.id = art_author.art_id ' +
+            'JOIN  author ON art_author.author_id = author.id' +
+            ' WHERE art.title LIKE "%?%" OR' +
+            ' author.name LIKE "%?%" OR' +
+            ' art.creation_date LIKE "%?%"' +
+            'GROUP BY art.id,title,image_url' +
+            'ORDER BY count(art.id) DESC',
+            values: [text,text,text]
+        }, function (error, results, fields) {
+            if (error) throw error;
+            console.log('The solution is: ', results[0]);
+            cb(results);
         });
     }
 };
