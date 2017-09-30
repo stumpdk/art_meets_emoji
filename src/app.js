@@ -9,6 +9,7 @@ const path = require('path');
 const dotenv = require('dotenv').config();
 const schedule = require('node-schedule');
 const db = require('../src/models/db');
+console.log(db);
 var messengerButton = "<html><head><title>Facebook Messenger Bot</title></head><body><h1>Facebook Messenger Bot</h1>This is a bot based on Messenger Platform QuickStart. For more details, see their <a href=\"https://developers.facebook.com/docs/messenger-platform/guides/quick-start\">docs</a>.<script src=\"https://button.glitch.me/button.js\" data-style=\"glitch\"></script><div class=\"glitchButton\" style=\"position:fixed;top:20px;right:20px;\"></div></body></html>";
 
 
@@ -88,19 +89,23 @@ app.post('/webhook', function(req, res) {
 });
 
 app.post('/subscribe', function(req, res){
+    console.warn(db);
     console.log('subscribe endpoint reached');
 
     var data = req.body;
-    if(data.object === 'page'){
+    //if(data.object === 'page'){
         if(req.body['messenger user id']){
             console.warn(data.entry);
             db.subscribeUser(req.body['messenger user id'])
         }
-    }
-    else{
+        else{
+            console.warn('message user id not set!');
+        }
+//    }
+//    else{
         //Didn't receive the right format
-        console.warn('unsubscribe data wasn\'t a page');
-    }
+//        console.warn('subscribe data wasn\'t a page');
+//    }
 
     res.sendStatus(200);
 });

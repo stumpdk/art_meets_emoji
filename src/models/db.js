@@ -8,7 +8,7 @@ var pool  = mysql.createPool({
   database        : 'art_meets_emoji'
 });
 
-module.export = {
+module.exports = {
     subscribeUser: function(userId, cb){
 
         getSubscriber(userId, createOrUpdateExistingSubscription);
