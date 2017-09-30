@@ -11,7 +11,7 @@ services:
     volumes:
         - /db_init:/docker-entrypoint-initdb.d
     ports:
-      - "27017:27017"
+      - "3306:3306"
     environment:
         MYSQL_ROOT_PASSWORD: example
         MYSQL_DATABASE: art_meets_emoji
