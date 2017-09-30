@@ -36,7 +36,7 @@ module.exports = {
 
         function updateSubscriber(userId, status, cb){
             pool.query({
-                sql: 'update subscriptions set (enabled = ?, subscribtion_date = NOW()) WHERE user_id = ?',
+                sql: 'update subscriptions set (enabled = ?, subscription_date = NOW()) WHERE user_id = ?',
                 values: [status, userId]
             }, function(error, result, fields){
                 if (error) throw error;
@@ -45,7 +45,7 @@ module.exports = {
 
         function addNewSubscriber(userId){
             pool.query({
-                sql: 'insert into subscriptions (user_id, enabled, subscribtion_date) VALUES (?, 1, NOW())',
+                sql: 'insert into subscriptions (user_id, enabled, subscription_date) VALUES (?, 1, NOW())',
                 values: [userId]
             }, function(error, result, fields){
                 if (error) throw error;
