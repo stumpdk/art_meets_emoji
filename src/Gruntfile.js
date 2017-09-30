@@ -29,7 +29,7 @@ module.exports = function(grunt) {
                 spawn: false
             },
             testi: {
-                files: ['./app.js', './Gruntfile.js'],
+                files: [' app.js', './Gruntfile.js'],
                 tasks: ['jsbeautifier', 'run:node'],
             },
             sourcesy: {

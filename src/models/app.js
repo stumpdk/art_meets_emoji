@@ -4,7 +4,7 @@
 'use strict';
 const express = require('express');
 const bodyParser = require('body-parser');
-const request = require('request');
+//const request = require('request');
 const path = require('path');
 const dotenv = require('dotenv').config();
 var messengerButton = "<html><head><title>Facebook Messenger Bot</title></head><body><h1>Facebook Messenger Bot</h1>This is a bot based on Messenger Platform QuickStart. For more details, see their <a href=\"https://developers.facebook.com/docs/messenger-platform/guides/quick-start\">docs</a>.<script src=\"https://button.glitch.me/button.js\" data-style=\"glitch\"></script><div class=\"glitchButton\" style=\"position:fixed;top:20px;right:20px;\"></div></body></html>";
@@ -24,16 +24,16 @@ app.use(bodyParser.urlencoded({
 app.get('/webhook', function(req, res) {
     if (req.query['hub.mode'] === 'subscribe' &&
         req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) {
-        console.log("Validating webhook");
+        //console.log("Validating webhook");
         res.status(200).send(req.query['hub.challenge']);
     } else {
-        console.error("Failed validation. Make sure the validation tokens match.");
+        console.log("Failed validation. Make sure the validation tokens match.");
         res.sendStatus(403);
     }
 });
 
 /*app.get('/syn', function(req, res) {
-    console.log(synonyms(req.query.query));
+    //console.log(synonyms(req.query.query));
     res.send(JSON.stringify(synonyms(req.query.query)));
 });*/
 // Display the web page
@@ -47,15 +47,15 @@ app.get('/', function(req, res) {
 
 // Message processing
 app.post('/webhook', function(req, res) {
-    console.log(req.body);
-    var data = req.body;
-    console.log('her er data', data);
+    ////console.log(req.body.data);
+    var data = req.body.data;
+    ////console.log('her er data', data.entry[0]);
     // Make sure this is a page subscription
     if (data.object === 'page') {
 
         // Iterate over each entry - there may be multiple if batched
         data.entry.forEach(function(entry) {
-            console.log('inside entry loop');
+            //console.log('inside entry loop');
             var pageID = entry.id;
             var timeOfEvent = entry.time;
 
@@ -66,11 +66,12 @@ app.post('/webhook', function(req, res) {
                 } else if (event.postback) {
                     receivedPostback(event);
                 } else {
-                    console.log("Webhook received unknown event: ", event);
+                    //console.log("Webhook received unknown event: ", event);
+                    //console.log("end of event");
                 }
             });
         });
-        console.log('all went well');
+        //console.log('all went well');
         // Assume all went well.
         //
         // You must send back a 200, within 20 seconds, to let us know
@@ -78,7 +79,7 @@ app.post('/webhook', function(req, res) {
         // will time out and we will keep trying to resend.
         res.sendStatus(200);
     }
-    console.log('data.object wasn\'t a page');
+    //console.log('data.object wasn\'t a page');
 });
 
 // Incoming events handling
@@ -88,9 +89,9 @@ function receivedMessage(event) {
     var timeOfMessage = event.timestamp;
     var message = event.message;
 
-    console.log("Received message for user %d and page %d at %d with message:",
-        senderID, recipientID, timeOfMessage);
-    console.log(JSON.stringify(message));
+    //console.log("Received message for user %d and page %d at %d with message:",
+//        senderID, recipientID, timeOfMessage);
+    ////console.log(JSON.stringify(message));
 
     var messageId = message.mid;
 
@@ -102,14 +103,14 @@ function receivedMessage(event) {
         // and send back the template example. Otherwise, just echo the text we received.
         switch (messageText) {
             case 'generic':
-                sendGenericMessage(senderID);
+//                sendGenericMessage(senderID);
                 break;
 
             default:
-                sendTextMessage(senderID, messageText);
+//                sendTextMessage(senderID, messageText);
         }
     } else if (messageAttachments) {
-        sendTextMessage(senderID, "Message with attachment received");
+//        sendTextMessage(senderID, "Message with attachment received");
     }
 }
 
@@ -122,7 +123,7 @@ function receivedPostback(event) {
     // button for Structured Messages.
     var payload = event.postback.payload;
 
-    console.log("Received postback for user %d and page %d with payload '%s' " +
+    //console.log("Received postback for user %d and page %d with payload '%s' " +
         "at %d", senderID, recipientID, payload, timeOfPostback);
 
     // When a postback is called, we'll send a message back to the sender to
@@ -207,17 +208,18 @@ function callSendAPI(messageData) {
             var recipientId = body.recipient_id;
             var messageId = body.message_id;
 
-            console.log("Successfully sent generic message with id %s to recipient %s",
-                messageId, recipientId);
+            //console.log("Successfully sent generic message with id %s to recipient %s",
+            //    messageId, recipientId);
         } else {
-            console.error("Unable to send message.");
-            console.error(response);
-            console.error(error);
+            console.log("Unable to send message. Here is the error");
+            //console.log("end of error");
+            //console.error(response);
+            //console.error(error);
         }
     });
 }
 
 // Set Express to listen out for HTTP requests
 var server = app.listen(process.env.PORT || 3000, function() {
-    console.log("Listening on port %s", server.address().port);
+    //console.log("Listening on port %s", server.address().port);
 });

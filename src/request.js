@@ -5,19 +5,17 @@ var http = require("http");
  * @param options: http options object
  * @param callback: callback to pass the results JSON object(s) back
  */
-exports.getJSON = function(options, onResult)
-{
+exports.getJSON = function(options, onResult) {
     console.log("rest::getJSON");
 
     var port = http;
-    var req = port.get(options.url, function(res)
-    {
+    var req = port.get(options.url, function(res) {
         console.log('hej');
         var output = '';
         console.log(options.host + ':' + res.statusCode);
         res.setEncoding('utf8');
 
-        res.on('data', function (chunk) {
+        res.on('data', function(chunk) {
             output += chunk;
             console.log('jer', output);
 

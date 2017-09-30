@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const request = require('request');
 const path = require('path');
 const dotenv = require('dotenv').config();
+const schedule = require('node-schedule');
 var messengerButton = "<html><head><title>Facebook Messenger Bot</title></head><body><h1>Facebook Messenger Bot</h1>This is a bot based on Messenger Platform QuickStart. For more details, see their <a href=\"https://developers.facebook.com/docs/messenger-platform/guides/quick-start\">docs</a>.<script src=\"https://button.glitch.me/button.js\" data-style=\"glitch\"></script><div class=\"glitchButton\" style=\"position:fixed;top:20px;right:20px;\"></div></body></html>";
 
 
@@ -64,10 +65,14 @@ app.post('/webhook', function(req, res) {
             entry.messaging.forEach(function(event) {
                 if (event.message) {
                     receivedMessage(event);
+                    console.error("received message",event);
                 } else if (event.postback) {
-                    receivedPostback(event);
+                    //receivedPostback(event);
+                    console.error("received postback");
+                } else if (event.read){
+                    console.error("received read event");
                 } else {
-                    console.log("Webhook received unknown event: ", event);
+                    console.error("Webhook received unknown event: ", event);
                 }
             });
         });
@@ -81,6 +86,43 @@ app.post('/webhook', function(req, res) {
     }
 });
 
+app.post('/subscribe', function(req, res){
+    console.log('subscribe endpoint reached');
+
+    var data = req.body;
+    if(data.object === 'page'){
+        if(req.body['messenger user id']){
+            console.warn(data.entry);
+            //db.subscribeUser(req.body['messenger user id'])
+        }
+    }
+    else{
+        //Didn't receive the right format
+        console.warn('unsubscribe data wasn\'t a page');
+    }
+
+    res.sendStatus(200);
+});
+
+app.post('/unsubscribe', function(req, res) {
+    console.log('unsubscribe endpoint reached');
+
+    var data = req.body;
+    if(data.object === 'page'){
+        if(req.body['messenger user id'] && req.query.reason){
+            console.warn(data.entry);
+            //db.unsubscribeUser(req.body['messenger user id'], req.query.reason)
+        }
+    }
+    else{
+        //Didn't receive the right format
+        console.warn('unsubscribe data wasn\'t a page');
+    }
+
+    res.sendStatus(200);
+
+});
+
 // Incoming events handling
 function receivedMessage(event) {
     var senderID = event.sender.id;
@@ -88,12 +130,12 @@ function receivedMessage(event) {
     var timeOfMessage = event.timestamp;
     var message = event.message;
 
-    console.log("Received message for user %d and page %d at %d with message:",
+    console.error("Received message for user %d and page %d at %d with message:",
         senderID, recipientID, timeOfMessage);
-    console.log(JSON.stringify(message));
+//    console.log(JSON.stringify(message));
 
     var messageId = message.mid;
-
+    console.warn(message.text);
     var messageText = message.text;
     var messageAttachments = message.attachments;
 
@@ -104,15 +146,26 @@ function receivedMessage(event) {
             case 'generic':
                 sendGenericMessage(senderID);
                 break;
-
+            case 'image':
+                console.error(messageText);
+                sendImageMessage(senderID);
             default:
-                sendTextMessage(senderID, messageText);
+                getAssetsByText(senderID, messageText);
         }
     } else if (messageAttachments) {
         sendTextMessage(senderID, "Message with attachment received");
     }
 }
 
+function getAssetsByText(userId, text){
+    db.searchImagesByText(text, outputData);
+
+    function outputData(result){
+        res.send(JSON.stringify(results));
+    }
+}
+
+/*
 function receivedPostback(event) {
     var senderID = event.sender.id;
     var recipientID = event.recipient.id;
@@ -129,7 +182,7 @@ function receivedPostback(event) {
     // let them know it was successful
     sendTextMessage(senderID, "Postback called");
 }
-
+*/
 //////////////////////////
 // Sending helpers
 //////////////////////////
@@ -146,6 +199,25 @@ function sendTextMessage(recipientId, messageText) {
     callSendAPI(messageData);
 }
 
+function sendImageMessage(recipientId){
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message:{
+        attachment:{
+          type:"image",
+          payload:{
+            url:"http://www.smk.dk/fileadmin/user_upload/Billeder/besoeg-museet/Kalender/2017/Oktober/KN_singleview1.jpg"
+            }
+            }
+        }
+    };
+
+    callSendAPI(messageData);
+}
+
+/*
 function sendGenericMessage(recipientId) {
     var messageData = {
         recipient: {
@@ -192,7 +264,7 @@ function sendGenericMessage(recipientId) {
 
     callSendAPI(messageData);
 }
-
+*/
 function callSendAPI(messageData) {
     request({
         uri: 'https://graph.facebook.com/v2.6/me/messages',
@@ -210,12 +282,17 @@ function callSendAPI(messageData) {
             console.log("Successfully sent generic message with id %s to recipient %s",
                 messageId, recipientId);
         } else {
-            console.error("Unable to send message.");
-            console.error(response);
-            console.error(error);
+            console.error("Unable to send message.", response);
+//            console.error(response);
+//            console.error(error);
         }
     });
 }
+
+//Send images to recipients every 24 hours (or so)
+var j = schedule.scheduleJob('* * * * *', function(){
+  console.log('Sending messages for recipients now!');
+});
 
 // Set Express to listen out for HTTP requests
 var server = app.listen(process.env.PORT || 3000, function() {
