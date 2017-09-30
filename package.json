@@ -1,0 +1,26 @@
+{
+  "name": "art_meets_emoji",
+  "version": "1.0.0",
+  "description": "Hack4DK project about given the cultural heritage back to the people",
+  "main": "app.js",
+  "dependencies": {
+    "dotenv": "^4.0.0",
+    "express": "^4.15.4",
+    "body-parser": "^1.18.1",
+    "grunt": "^1.0.1",
+    "grunt-jsbeautifier": "^0.2.13",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-open": "^0.2.3",
+    "grunt-run": "^0.8.0",
+    "node-schedule": "^1.2.5",
+    "mysql": "^2.14.1",
+    "request": "^2.82.0",
+    "synonyms": "^1.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

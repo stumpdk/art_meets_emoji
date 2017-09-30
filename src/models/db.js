@@ -9,7 +9,7 @@ var pool  = mysql.createPool({
 });
 
 module.export = {
-    subscribeUser = function(userId, cb){
+    subscribeUser: function(userId, cb){
 
         getSubscriber(userId, createOrUpdateExistingSubscription);
 
@@ -18,7 +18,7 @@ module.export = {
                 sql: 'select user_id, enabled from subscribtions where user_id = ?',
                 values : [userId]
             }, function(error, results, fields){
-                if error throw error;
+                if (error) throw error;
 
                 cb(error, results, fields);
             });
@@ -38,7 +38,7 @@ module.export = {
                 sql: 'update subscriptions set (enabled = ?, subscribtion_date = NOW()) WHERE user_id = ?',
                 values: [status, userId]
             }, function(error, result, fields){
-                if error throw error;
+                if (error) throw error;
             });
         };
 
@@ -47,22 +47,22 @@ module.export = {
                 sql: 'insert into subscriptions (user_id, enabled, subscribtion_date) VALUES (?, 1, NOW())',
                 values: [userId]
             }, function(error, result, fields){
-                if error throw error;
+                if (error) throw error;
             });
         };
     },
 
-    unsubscribeUser = function(userId, reason, cb){
+    unsubscribeUser: function(userId, reason, cb){
         pool.query({
             sql: 'update subscriptions set enabled = 0 AND reason = ? WHERE user_id = ?',
             values: [reason, userId]
         }, function(error, result, fields){
-            if error throw error;
+            if (error) throw error;
             cb();
         });
     },
 
-    searchImagesByText = function(userId, text, cb){
+    searchImagesByText: function(userId, text, cb){
         pool.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
           if (error) throw error;
           console.log('The solution is: ', results[0]);
