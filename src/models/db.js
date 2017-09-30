@@ -36,7 +36,7 @@ module.exports = {
 
         function updateSubscriber(userId, status, cb){
             pool.query({
-                sql: 'update subscriptions set (enabled = ?, subscription_date = NOW()) WHERE user_id = ?',
+                sql: 'update subscriptions set enabled = ?, subscription_date = NOW() WHERE user_id = ?',
                 values: [status, userId]
             }, function(error, result, fields){
                 if (error) throw error;
@@ -55,7 +55,7 @@ module.exports = {
 
     unsubscribeUser: function(userId, reason, cb){
         pool.query({
-            sql: 'update subscriptions set enabled = 0 AND reason = ? WHERE user_id = ?',
+            sql: 'update subscriptions set enabled = 0, reason = ? WHERE user_id = ?',
             values: [reason, userId]
         }, function(error, result, fields){
             if (error) throw error;
