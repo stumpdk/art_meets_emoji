@@ -66,7 +66,7 @@ app.post('/webhook', function(req, res) {
             // Iterate over each messaging event
             entry.messaging.forEach(function(event) {
                 if (event.message) {
-                    cleareceivedMessage(event);
+                    receivedMessage(event);
                     console.error("received message",event);
                 } else if (event.postback) {
                     //receivedPostback(event);
@@ -84,10 +84,10 @@ app.post('/webhook', function(req, res) {
         // You must send back a 200, within 20 seconds, to let us know
         // you've successfully received the callback. Otherwise, the request
         // will time out and we will keep trying to resend.
-        res.sendStatus(200);
+        // res.sendStatus(200);
     }
     //All went kind of well, even if we dont support other types of requests than pages
-    res.sendStatus(200);
+    // res.sendStatus(200);
 });
 
 app.post('/subscribe', function(req, res){
@@ -170,12 +170,11 @@ function receivedMessage(event) {
 }
 
 function getAssetsByText(recipientId, text){
-    db.searchImagesByText(text, outputData);
-    console.log("sending asset by text");
+    db.searchImagesByText(recipientId,text, outputData);
+    console.log("sending assets by text");
 
     function outputData(result){
-        json = JSON.stringify(result);
-        sendImageMessage(recipientId,json[0].image_url);
+        sendImageMessage(recipientId,result[0]);
     }
 }
 
@@ -213,21 +212,25 @@ function sendTextMessage(recipientId, messageText) {
     callSendAPI(messageData);
 }
 
-function sendImageMessage(recipientId,image_url){
+function sendImageMessage(recipientId,image_data){
     var messageData = {
         recipient: {
             id: recipientId
         },
-        message:{
-        attachment:{
-          type:"image",
-          payload:{
-            url:image_url
-            }
+        message: {
+            attachment: {
+                type: "template",
+                payload: {
+                    template_type: "generic",
+                    elements: [{
+                        title: "image",
+                        subtitle: image_data.title,
+                        image_url: image_data.image_url
+                    }]
+                }
             }
         }
     };
-
     callSendAPI(messageData);
 }
 
