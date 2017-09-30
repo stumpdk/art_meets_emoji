@@ -9,7 +9,7 @@ const path = require('path');
 const dotenv = require('dotenv').config();
 const schedule = require('node-schedule');
 const db = require('../src/models/db');
-console.log(db);
+
 var messengerButton = "<html><head><title>Facebook Messenger Bot</title></head><body><h1>Facebook Messenger Bot</h1>This is a bot based on Messenger Platform QuickStart. For more details, see their <a href=\"https://developers.facebook.com/docs/messenger-platform/guides/quick-start\">docs</a>.<script src=\"https://button.glitch.me/button.js\" data-style=\"glitch\"></script><div class=\"glitchButton\" style=\"position:fixed;top:20px;right:20px;\"></div></body></html>";
 
 
@@ -86,6 +86,8 @@ app.post('/webhook', function(req, res) {
         // will time out and we will keep trying to resend.
         res.sendStatus(200);
     }
+    //All went kind of well, even if we dont support other types of requests than pages
+    res.sendStatus(200);
 });
 
 app.post('/subscribe', function(req, res){
@@ -116,9 +118,11 @@ app.post('/unsubscribe', function(req, res) {
     var data = req.body;
     //if(data.object === 'page'){
         if(req.body['messenger user id']){
-            var reason =  req.query.reason || null;
+            var reason =  req.query.reason || false;
             console.warn(data.entry);
-            db.unsubscribeUser(req.body['messenger user id'], reason)
+            db.unsubscribeUser(req.body['messenger user id'], reason, function sendStatus(){
+                res.sendStatus(200);
+            });
         }
 //    }
 //    else{
@@ -126,7 +130,7 @@ app.post('/unsubscribe', function(req, res) {
     //    console.warn('unsubscribe data wasn\'t a page');
 //    }
 
-    res.sendStatus(200);
+
 
 });
 
