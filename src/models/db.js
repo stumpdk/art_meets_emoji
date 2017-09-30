@@ -2,9 +2,10 @@ var mysql = require('mysql');
 
 var pool  = mysql.createPool({
   connectionLimit : 10,
-  host            : 'db',
-  user            : 'user',
-  password        : 'password',
+  host            : 'localhost',
+  port            : 3306,
+  user            : 'root',
+  password        : 'example',
   database        : 'art_meets_emoji'
 });
 
@@ -15,7 +16,7 @@ module.exports = {
 
         function getSubscriber(userId, cb){
             pool.query({
-                sql: 'select user_id, enabled from subscribtions where user_id = ?',
+                sql: 'select user_id, enabled from subscriptions where user_id = ?',
                 values : [userId]
             }, function(error, results, fields){
                 if (error) throw error;
