@@ -9,7 +9,7 @@ services:
   db:
     image: mysql
     volumes:
-        - /db_init:/docker-entrypoint-initdb.d
+        - ./db_init:/docker-entrypoint-initdb.d
     ports:
       - "3306:3306"
     environment:
