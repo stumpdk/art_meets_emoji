@@ -2,10 +2,10 @@ var mysql = require('mysql');
 
 var pool  = mysql.createPool({
   connectionLimit : 10,
-  host            : 'example.org',
-  user            : 'bob',
-  password        : 'secret',
-  database        : 'my_db'
+  host            : 'db',
+  user            : 'user',
+  password        : 'password',
+  database        : 'art_meets_emoji'
 });
 
 module.export = {
@@ -53,8 +53,6 @@ module.export = {
     },
 
     unsubscribeUser = function(userId, reason, cb){
-        var reason = reason || null;
-
         pool.query({
             sql: 'update subscriptions set enabled = 0 AND reason = ? WHERE user_id = ?',
             values: [reason, userId]

@@ -8,6 +8,7 @@ const request = require('request');
 const path = require('path');
 const dotenv = require('dotenv').config();
 const schedule = require('node-schedule');
+const db = require('/src/db.js');
 var messengerButton = "<html><head><title>Facebook Messenger Bot</title></head><body><h1>Facebook Messenger Bot</h1>This is a bot based on Messenger Platform QuickStart. For more details, see their <a href=\"https://developers.facebook.com/docs/messenger-platform/guides/quick-start\">docs</a>.<script src=\"https://button.glitch.me/button.js\" data-style=\"glitch\"></script><div class=\"glitchButton\" style=\"position:fixed;top:20px;right:20px;\"></div></body></html>";
 
 
@@ -93,7 +94,7 @@ app.post('/subscribe', function(req, res){
     if(data.object === 'page'){
         if(req.body['messenger user id']){
             console.warn(data.entry);
-            //db.subscribeUser(req.body['messenger user id'])
+            db.subscribeUser(req.body['messenger user id'])
         }
     }
     else{
@@ -108,16 +109,17 @@ app.post('/unsubscribe', function(req, res) {
     console.log('unsubscribe endpoint reached');
 
     var data = req.body;
-    if(data.object === 'page'){
-        if(req.body['messenger user id'] && req.query.reason){
+    //if(data.object === 'page'){
+        if(req.body['messenger user id']){
+            var reason =  req.query.reason || null;
             console.warn(data.entry);
-            //db.unsubscribeUser(req.body['messenger user id'], req.query.reason)
+            db.unsubscribeUser(req.body['messenger user id'], reason)
         }
-    }
-    else{
+//    }
+//    else{
         //Didn't receive the right format
-        console.warn('unsubscribe data wasn\'t a page');
-    }
+    //    console.warn('unsubscribe data wasn\'t a page');
+//    }
 
     res.sendStatus(200);
 
