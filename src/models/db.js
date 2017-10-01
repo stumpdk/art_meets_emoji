@@ -91,9 +91,12 @@ module.exports = {
             sql: 'SELECT DISTINCT art.id,art.title,art.image_url,art.creation_date FROM art ' +
             'JOIN art_author ON art.id = art_author.art_id ' +
             'JOIN  author ON art_author.author_id = author.id' +
-            ' WHERE art.title LIKE ? OR' +
+            'LEFT OUTER JOIN seen_art ON seen_art.art_id = art.id' +
+            ' WHERE ' +
+            ' (art.title LIKE ? OR' +
             ' author.name LIKE ? OR' +
-            ' art.creation_date LIKE ?' +
+            ' art.creation_date LIKE ?)' +
+            ' AND seen_art.user_id is null' +
             ' GROUP BY art.id' +
             ' ORDER BY count(art.id) DESC LIMIT 1',
             values: [text,text,text]
