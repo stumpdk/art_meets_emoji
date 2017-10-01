@@ -102,7 +102,16 @@ app.post('/webhook', function(req, res) {
 
 function handlePostBack(postback){
     var payload = JSON.parse(postback.payload);
-    db.saveResponse(payload.art_id, payload.user_id, payload.reaction);
+    db.saveResponse(payload.art_id, payload.user_id, payload.reaction, respondOnPostback);
+
+    function respondOnPostback(){
+        if(payload.reaction == 0){
+            sendTextMessage(payload.user_id, 'Got that. You won\'t get art like that again.' );
+        }
+        else{
+            sendTextMessage(payload.user_id, 'Got that. Glad you liked it! :)');
+        }
+    }
 }
 
 app.post('/subscribe', function(req, res){
@@ -193,11 +202,17 @@ function receivedMessage(event) {
 
                 //Check for question mark
                 if(messageText.indexOf('?') !== -1){
-                    getAssetsByText(senderID, messageText.replace('?', ''));
+                    //var keyword = messageText.split()
+                    var n = messageText.split(" ");
+                    getAssetsByText(senderID, n[n.length - 1].replace('?', ''));
                 }
                 else{
                     //Otherwise get NERs from sentence
                     //db.save(NER.get(), sendThankYou);
+                    var n = messageText.split(" ");
+
+                    db.saveTags(senderID, n);
+
                     function sendThankYouMessage(){
                         sendTextMessage(senderID, 'Thank you for your input, I can probaply use it for the image!');
                     }

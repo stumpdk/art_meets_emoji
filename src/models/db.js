@@ -117,5 +117,39 @@ module.exports = {
                 cb();
             }
         });
+    },
+
+    saveTags(user_id, tags, cb){
+        //Check the latest artwork that the user responded to
+        pool.query({
+            sql: 'SELECT * FROM reaction WHERE user_id = ?',
+            values: [user_id]
+        }, function(error, results, fields){
+            if(error) throw error;
+
+            if(results.length == 0){
+                return;
+            }
+
+            saveTags(results[0].art_id, results[0].user_id, tags, cb);
+        });
+
+        function saveTags(art_id, user_id, tags){
+            var query = '';
+            for(var i = 0; i< tags.length; i++){
+                query = query + 'INSERT INTO tag (user_id, art_id, value) VALUES (' + user_id + ', ' + art_id + ', \'' + tags[i] + '\');'
+
+                pool.query({
+                    sql: query,
+                    values:[user_id, art_id, tags[i]]
+                }, function(error, results, fields){
+                    if(error) throw error;
+
+                    if(cb){
+                        cb(results);
+                    }
+                });
+            }
+        };
     }
 };
