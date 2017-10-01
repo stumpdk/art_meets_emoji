@@ -105,8 +105,9 @@ module.exports = {
     },
 
     saveResponse(art_id, user_id, response, cb){
+        console.warn(user_id);
         pool.query({
-            sql: 'INSERT INTO reactions (user_id, art_id, reaction, time_for_reaction) VALUES (?,?,?, NOW())',
+            sql: 'INSERT INTO reaction (user_id, art_id, positive, time_for_reaction) VALUES (?,?,?, NOW())',
             values: [user_id, art_id, response]
         }, function(error, results, fields){
             if(error) throw error;
