@@ -228,6 +228,7 @@ function receivedMessage(event) {
 
 function getAssetsByText(recipientId, text){
     if(text == undefined){
+        text = "";
         db.getImage(recipientId, outputData);
         return;
     }
