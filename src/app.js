@@ -9,7 +9,7 @@ const path = require('path');
 const dotenv = require('dotenv').config();
 const schedule = require('node-schedule');
 const db = require('../src/models/db');
-
+const text = require('../src/models/textParser');
 var messengerButton = "<html><head><title>Facebook Messenger Bot</title></head><body><h1>Facebook Messenger Bot</h1>This is a bot based on Messenger Platform QuickStart. For more details, see their <a href=\"https://developers.facebook.com/docs/messenger-platform/guides/quick-start\">docs</a>.<script src=\"https://button.glitch.me/button.js\" data-style=\"glitch\"></script><div class=\"glitchButton\" style=\"position:fixed;top:20px;right:20px;\"></div></body></html>";
 
 
@@ -28,7 +28,7 @@ app.use(bodyParser.urlencoded({
 // Webhook validation
 app.get('/webhook', function(req, res) {
     if (req.query['hub.mode'] === 'subscribe' &&
-        req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) {
+        req.query['hub.verify_token'] === 'test'/*process.env.VERIFY_TOKEN*/) {
         console.log("Validating webhook");
         res.status(200).send(req.query['hub.challenge']);
     } else {
@@ -38,7 +38,8 @@ app.get('/webhook', function(req, res) {
 });
 
 app.get('/syn', function(req, res) {
-    console.log(synonyms(req.query.query));
+    text.test2('this is a test string containing words like yellow, happy, angry and Copenhagen');
+    //console.log(synonyms(req.query.query));
     res.send(JSON.stringify(synonyms(req.query.query)));
 });
 // Display the web page
@@ -52,8 +53,10 @@ app.get('/', function(req, res) {
 
 // Message processing
 app.post('/webhook', function(req, res) {
-    console.warn('got request');
     var data = req.body;
+
+    console.warn('got request', data);
+
 
     // Make sure this is a page subscription
     if (data.object === 'page') {
@@ -63,20 +66,27 @@ app.post('/webhook', function(req, res) {
             var pageID = entry.id;
             var timeOfEvent = entry.time;
 
-            // Iterate over each messaging event
-            entry.messaging.forEach(function(event) {
-                if (event.message) {
-                    receivedMessage(event);
-                    console.error("received message",event);
-                } else if (event.postback) {
-                    //receivedPostback(event);
-                    console.error("received postback");
-                } else if (event.read){
-                    console.error("received read event");
-                } else {
-                    console.error("Webhook received unknown event: ", event);
-                }
-            });
+            if(!entry.messaging){
+                console.warn('unhandled event:', entry);
+            }
+            else{
+
+                // Iterate over each messaging event
+                entry.messaging.forEach(function(event) {
+                    if (event.message) {
+                        receivedMessage(event);
+                        console.error("received message",event);
+                    } else if (event.postback) {
+                        //receivedPostback(event);
+                        console.error("received postback", event);
+                        handlePostBack(event.postback);
+                    } else if (event.read){
+                        console.error("received read event");
+                    } else {
+                        console.error("Webhook received unknown event: ", event);
+                    }
+                });
+            }
         });
 
         // Assume all went well.
@@ -84,11 +94,16 @@ app.post('/webhook', function(req, res) {
         // You must send back a 200, within 20 seconds, to let us know
         // you've successfully received the callback. Otherwise, the request
         // will time out and we will keep trying to resend.
-        res.sendStatus(200);
+        //res.sendStatus(200);
     }
     //All went kind of well, even if we dont support other types of requests than pages
-    //res.sendStatus(200);
+    res.sendStatus(200);
 });
+
+function handlePostBack(postback){
+    var payload = JSON.parse(postback.payload);
+    db.saveResponse(payload.art_id, payload.user_id, payload.reaction);
+}
 
 app.post('/subscribe', function(req, res){
     console.warn(db);
@@ -153,22 +168,41 @@ function receivedMessage(event) {
     if (messageText) {
         // If we receive a text message, check to see if it matches a keyword
         // and send back the template example. Otherwise, just echo the text we received.
-        switch (messageText) {
+        switch (messageText.toLowerCase()) {
             /*case 'generic':
                 sendGenericMessage(senderID);
                 break;*/
-            case 'picture':
-                console.error(messageText);
+            case 'image':
+                console.error('search for image', messageText);
                 //getAssetsByText(senderID, messageText);
-                sendImageMessage(senderID);
+                getAssetsByText(senderID);
                 break;
-            case 'text':
+                //break;
+        /*    case 'text':
                 sendTextMessage(senderID, 'hej');
-                break;
+                break;*/
+
+            case 'it\'s too often.':
+            case 'paintings are ugly':
+            case 'i was just curious':
+                console.log('Got subscription feedback.');
+            break;
             default:
 //                sendTextMessage(senderID, 'hej');
                 //sendImageMessage(senderID);
-                getAssetsByText(senderID, messageText);
+
+                //Check for question mark
+                if(messageText.indexOf('?') !== -1){
+                    getAssetsByText(senderID, messageText.replace('?', ''));
+                }
+                else{
+                    //Otherwise get NERs from sentence
+                    //db.save(NER.get(), sendThankYou);
+                    function sendThankYouMessage(){
+                        sendTextMessage(senderID, 'Thank you for your input, I can probaply use it for the image!');
+                    }
+                }
+
                 break;
         }
     } else if (messageAttachments) {
@@ -177,15 +211,21 @@ function receivedMessage(event) {
 }
 
 function getAssetsByText(recipientId, text){
+    if(text == undefined){
+        db.getImage(recipientId, outputData);
+        return;
+    }
+
     db.searchImagesByText(recipientId,text, outputData);
     console.log("sending assets by text");
 
     function outputData(result){
         if(result[0]){
+            console.warn('heres the result',result[0]);
             sendImageMessage(recipientId,result[0]);
         }
         else{
-            sendTextMessage(recipientId, 'Sorry, couldnt find anything');
+            sendTextMessage(recipientId, "Sorry, I couldn't find anything for you. Want a random painting? Write \"image\". Looking for something particular? Write a name, year, or title and an \"?\" Then we'll go through our collection to see if we have something for you!");
         }
     }
 }
@@ -229,16 +269,48 @@ function sendImageMessage(recipientId,image_data){
         recipient: {
             id: recipientId
         },
+        message:{
+    attachment:{
+      type:"image",
+      payload:{
+        url:image_data.image_url
+      }
+    }
+  }
+    };
+
+    callSendAPI(messageData, sendButtons);
+
+    function sendButtons(){
+        sendRespondButtons(recipientId, image_data.title, image_data.id);
+    };
+}
+
+function sendRespondButtons(recipientId, image_title, art_id){
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
         message: {
             attachment: {
                 type: "template",
                 payload: {
                     template_type: "generic",
                     elements: [{
-                        title: "image",
-                        subtitle: image_data.title,
-                        image_url: image_data.image_url
-                    }]
+                        title: image_title,
+                        subtitle: 'Do you like it?',
+                        //image_url: image_data.image_url,
+                        //item_url: image_data.image_url,
+                        buttons: [{
+              type: "postback",
+              title: "Nice!",
+              payload: JSON.stringify({type: 'reaction', art_id: art_id, reaction:1, user_id: recipientId}),
+          },{
+            type: "postback",
+            title: "Nah!",
+            payload: JSON.stringify({type: 'reaction', art_id: art_id, reaction:0, user_id: recipientId}),
+            }],
+                    }],
                 }
             }
         }
@@ -294,11 +366,11 @@ function sendGenericMessage(recipientId) {
     callSendAPI(messageData);
 }
 */
-function callSendAPI(messageData) {
+function callSendAPI(messageData, cb) {
     request({
         uri: 'https://graph.facebook.com/v2.6/me/messages',
         qs: {
-            access_token: 'EAACEbCg3NhYBAOuIhp8swnm8HvAZCKh7PdqGIpd17hiS9lJEqdd6D20tI6sX9ZBGBRRCuKW3JrMMOZADtkjjrDKza9OoZCu2ZAZCFAHTUvVMHcusT8aau15zq5QXqbxUh2G7oRUUOwXxmjJyWdDYD5N19cHm9fsea1ZAWqZASjO8rwZDZD'
+            access_token: 'EAAMZC2kJZAfcgBAFwJjoZBxp8VqdqOKj32LygDJfb8VudmgiwbOTG4tlfbVu54WHGR9SAaiSHOmsZBSwnuWinveQi6ZCWt2YgtSrDSQz9ZA5SNhDRZBz8SHUJR6zuyZA7xK2tfJEJSOFNzM5mXFUUhggTQ3tO3KFw6BkMrtHm1SZAZAAZDZD'
         },
         method: 'POST',
         json: messageData,
@@ -313,6 +385,10 @@ function callSendAPI(messageData) {
             console.error("Unable to send message.", response);
 //            console.error(response);
 //            console.error(error);
+        }
+
+        if(cb){
+            cb();
         }
     });
 }

@@ -74,18 +74,18 @@ module.exports = {
     getImage: function(userId, cb){
         console.warn('searching for images');
         pool.query({
-            sql: 'select id, image_url from art limit 5000',
+            sql: 'select art.id,art.title,art.image_url,art.creation_date from art limit 5000',
         }, function(error, result, fields){
             if(error) throw error;
 
             var randomId = Math.floor(Math.random() * result.length-1) + 1;
 
-            cb(result[randomId]);
+            cb([result[randomId]]);
         });
     },
 
-    searchImagesByText: function(userId, text, cb) {
-        console.log(text);
+    searchImagesByText: function(userId, text, cb){
+        console.log('search art for keyword: ', text);
         text = "%"+text+"%"
         pool.query({
             sql: 'SELECT DISTINCT art.id,art.title,art.image_url,art.creation_date FROM art ' +
@@ -95,12 +95,26 @@ module.exports = {
             ' author.name LIKE ? OR' +
             ' art.creation_date LIKE ?' +
             ' GROUP BY art.id' +
-            ' ORDER BY count(art.id) DESC LIMIT 0,5',
+            ' ORDER BY count(art.id) DESC LIMIT 1',
             values: [text,text,text]
         }, function (error, results, fields) {
             if (error) throw error;
             console.log('The solution is: ', results);
             cb(results);
+        });
+    },
+
+    saveResponse(art_id, user_id, response, cb){
+        pool.query({
+            sql: 'INSERT INTO reactions (user_id, art_id, reaction, time_for_reaction) VALUES (?,?,?, NOW())',
+            values: [user_id, art_id, response]
+        }, function(error, results, fields){
+            if(error) throw error;
+            console.warn('saved user reaction');
+
+            if(cb){
+                cb();
+            }
         });
     }
 };
