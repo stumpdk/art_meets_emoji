@@ -88,9 +88,10 @@ module.exports = {
         console.log('search art for keyword: ', text);
         text = "%"+text+"%"
         pool.query({
-            sql: 'SELECT DISTINCT art.id,art.title,art.image_url,art.creation_date FROM art ' +
+            sql: 'SELECT DISTINCT art.id,art.title,art.image_url,art.creation_date,group_concat(author.name) as author,type.name as type FROM art ' +
             ' JOIN art_author ON art.id = art_author.art_id ' +
             ' JOIN  author ON art_author.author_id = author.id' +
+            ' JOIN  type ON art.type_id = type.id' +
             ' LEFT OUTER JOIN seen_art ON seen_art.art_id = art.id' +
             ' LEFT OUTER JOIN  tag ON tag.art_id = art.id' +
             ' WHERE ' +
