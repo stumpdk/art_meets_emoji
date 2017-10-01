@@ -104,7 +104,7 @@ module.exports = {
             values: [text,text,text,text,userId]
         }, function (error, results, fields) {
             if (error) throw error;
-            console.log('The solution is: ', results);
+            console.log('The solution is: ', results[0]);
             cb(results);
         });
     },

@@ -235,9 +235,9 @@ function getAssetsByText(recipientId, text){
     console.log("sending assets by text");
 
     function outputData(result){
-        if(result[0]){
-            console.warn('heres the result',result[0]);
-            sendImageMessage(recipientId,result[0]);
+        if(result){
+            console.warn('heres the result',result);
+            sendImageMessage(recipientId,result);
         }
         else{
             sendTextMessage(recipientId, "Sorry, I couldn't find anything for you. Want a random painting? Write \"image\". Looking for something particular? Write a name, year, or title and an \"?\" Then we'll go through our collection to see if we have something for you!");
