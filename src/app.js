@@ -9,6 +9,7 @@ const path = require('path');
 const dotenv = require('dotenv').config();
 const schedule = require('node-schedule');
 const db = require('../src/models/db');
+const dbRelated = require('../src/models/dbRelated');
 const text = require('../src/models/textParser');
 var messengerButton = "<html><head><title>Facebook Messenger Bot</title></head><body><h1>Facebook Messenger Bot</h1>This is a bot based on Messenger Platform QuickStart. For more details, see their <a href=\"https://developers.facebook.com/docs/messenger-platform/guides/quick-start\">docs</a>.<script src=\"https://button.glitch.me/button.js\" data-style=\"glitch\"></script><div class=\"glitchButton\" style=\"position:fixed;top:20px;right:20px;\"></div></body></html>";
 
@@ -231,7 +232,7 @@ function getAssetsByText(recipientId, text){
         return;
     }
 
-    db.searchImagesByText(recipientId,text, outputData);
+    dbRelated.searchFavoritesRelatedImagesByText(recipientId,text, outputData);
     console.log("sending assets by text");
 
     function outputData(result){
