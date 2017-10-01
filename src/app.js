@@ -280,6 +280,7 @@ function sendTextMessage(recipientId, messageText) {
 }
 
 function sendImageMessage(recipientId,image_data){
+    db.insertSeenArt(recipientId,image_data.id);
     var messageData = {
         recipient: {
             id: recipientId

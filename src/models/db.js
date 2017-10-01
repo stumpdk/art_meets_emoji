@@ -109,6 +109,16 @@ module.exports = {
         });
     },
 
+    insertSeenArt: function (userId, artId) {
+        pool.query({
+            sql: 'INSERT INTO seen_art (art_id, user_id) VALUES (?,?)',
+            values: [user_id, art_id]
+        }, function(error, results, fields){
+            if(error) throw error;
+            console.warn('saved seen_art');
+        });
+    },
+
     saveResponse(art_id, user_id, response, cb){
         console.warn(user_id);
         pool.query({
