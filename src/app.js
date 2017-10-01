@@ -211,7 +211,7 @@ function receivedMessage(event) {
                     //db.save(NER.get(), sendThankYou);
                     var n = messageText.split(" ");
 
-                    db.saveTags(senderID, n);
+                    db.saveTags(senderID, n, sendThankYouMessage);
 
                     function sendThankYouMessage(){
                         sendTextMessage(senderID, 'Thank you for your input, I can probaply use it for the image!');

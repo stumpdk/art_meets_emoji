@@ -140,21 +140,26 @@ module.exports = {
         });
 
         function saveTags(art_id, user_id, tags){
-            var query = '';
+            var query = 'INSERT INTO tag (user_id, art_id, value) VALUES ';
             for(var i = 0; i< tags.length; i++){
-                query = query + 'INSERT INTO tag (user_id, art_id, value) VALUES (' + user_id + ', ' + art_id + ', \'' + tags[i] + '\');'
-
-                pool.query({
-                    sql: query,
-                    values:[user_id, art_id, tags[i]]
-                }, function(error, results, fields){
-                    if(error) throw error;
-
-                    if(cb){
-                        cb(results);
-                    }
-                });
+                query = query + ' (' + user_id + ', ' + art_id + ', \'' + tags[i] + '\'),'
             }
+            query = query.substring(0, query.length - 1);
+            console.log(query);
+            if(tags.length == 0){
+                cb();
+                return;
+            }
+            pool.getConnection(function(err, connection) {
+              // connected! (unless `err` is set)
+              connection.query(query, function(error, results, fields){
+                  if(error) throw error;
+
+                  if(cb){
+                      cb(results);
+                  }
+              });
+            });
         };
     }
 };
