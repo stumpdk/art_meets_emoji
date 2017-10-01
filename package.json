@@ -4,18 +4,19 @@
   "description": "Hack4DK project about given the cultural heritage back to the people",
   "main": "index.js",
   "dependencies": {
+    "body-parser": "^1.18.1",
     "dotenv": "^4.0.0",
     "express": "^4.15.4",
-    "body-parser": "^1.18.1",
     "grunt": "^1.0.1",
-    "grunt-jsbeautifier": "^0.2.13",
     "grunt-contrib-watch": "^1.0.0",
+    "grunt-jsbeautifier": "^0.2.13",
     "grunt-open": "^0.2.3",
     "grunt-run": "^0.8.0",
-    "node-schedule": "^1.2.5",
     "mysql": "^2.14.1",
+    "node-schedule": "^1.2.5",
     "request": "^2.82.0",
-    "synonyms": "^1.0.1"
+    "synonyms": "^1.0.1",
+    "winston": "^2.3.1"
   },
   "devDependencies": {},
   "scripts": {

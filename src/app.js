@@ -8,7 +8,8 @@ const request = require('request');
 const path = require('path');
 const dotenv = require('dotenv').config();
 const schedule = require('node-schedule');
-const db = require('../src/models/db');
+var winston = require('winston');
+const db = require('../src/models/db')(winston);
 const dbRelated = require('../src/models/dbRelated');
 //const text = require('../src/models/textParser');
 var messengerButton = "<html><head><title>Facebook Messenger Bot</title></head><body><h1>Facebook Messenger Bot</h1>This is a bot based on Messenger Platform QuickStart. For more details, see their <a href=\"https://developers.facebook.com/docs/messenger-platform/guides/quick-start\">docs</a>.<script src=\"https://button.glitch.me/button.js\" data-style=\"glitch\"></script><div class=\"glitchButton\" style=\"position:fixed;top:20px;right:20px;\"></div></body></html>";
@@ -29,18 +30,18 @@ app.use(bodyParser.urlencoded({
 // Webhook validation
 app.get('/webhook', function(req, res) {
     if (req.query['hub.mode'] === 'subscribe' &&
-        req.query['hub.verify_token'] === 'test'/*process.env.VERIFY_TOKEN*/) {
-        console.log("Validating webhook");
+        req.query['hub.verify_token'] === (process.env.VERIFY_TOKEN || 'test')/*process.env.VERIFY_TOKEN*/) {
+        winston.log('info', "Validating webhook");
         res.status(200).send(req.query['hub.challenge']);
     } else {
-        console.error("Failed validation. Make sure the validation tokens match.");
+        winston.log('error', "Failed validation. Make sure the validation tokens match.");
         res.sendStatus(403);
     }
 });
 
 app.get('/syn', function(req, res) {
     text.test2('this is a test string containing words like yellow, happy, angry and Copenhagen');
-    //console.log(synonyms(req.query.query));
+    //winston.log('info', synonyms(req.query.query));
     res.send(JSON.stringify(synonyms(req.query.query)));
 });
 // Display the web page
@@ -56,7 +57,7 @@ app.get('/', function(req, res) {
 app.post('/webhook', function(req, res) {
     var data = req.body;
 
-    console.warn('got request', data);
+    winston.log('info', 'got request', data);
 
 
     // Make sure this is a page subscription
@@ -68,7 +69,7 @@ app.post('/webhook', function(req, res) {
             var timeOfEvent = entry.time;
 
             if(!entry.messaging){
-                console.warn('unhandled event:', entry);
+                winston.log('info', 'unhandled event:', entry);
             }
             else{
 
@@ -76,15 +77,15 @@ app.post('/webhook', function(req, res) {
                 entry.messaging.forEach(function(event) {
                     if (event.message) {
                         receivedMessage(event);
-                        console.error("received message",event);
+                        winston.log('error', "received message",event);
                     } else if (event.postback) {
                         //receivedPostback(event);
-                        console.error("received postback", event);
+                        winston.log('error', "received postback", event);
                         handlePostBack(event.postback);
                     } else if (event.read){
-                        console.error("received read event");
+                        winston.log('error', "received read event");
                     } else {
-                        console.error("Webhook received unknown event: ", event);
+                        winston.log('error', "Webhook received unknown event: ", event);
                     }
                 });
             }
@@ -116,35 +117,35 @@ function handlePostBack(postback){
 }
 
 app.post('/subscribe', function(req, res){
-    console.warn(db);
-    console.log('subscribe endpoint reached');
+    winston.log('info', db);
+    winston.log('info', 'subscribe endpoint reached');
 
     var data = req.body;
     //if(data.object === 'page'){
         if(req.body['messenger user id']){
-            console.warn(data.entry);
+            winston.log('info', data.entry);
             db.subscribeUser(req.body['messenger user id'])
         }
         else{
-            console.warn('message user id not set!');
+            winston.log('info', 'message user id not set!');
         }
 //    }
 //    else{
         //Didn't receive the right format
-//        console.warn('subscribe data wasn\'t a page');
+//        winston.log('info', 'subscribe data wasn\'t a page');
 //    }
 
     res.sendStatus(200);
 });
 
 app.post('/unsubscribe', function(req, res) {
-    console.log('unsubscribe endpoint reached');
+    winston.log('info', 'unsubscribe endpoint reached');
 
     var data = req.body;
     //if(data.object === 'page'){
         if(req.body['messenger user id']){
             var reason =  req.query.reason || false;
-            console.warn(data.entry);
+            winston.log('info', data.entry);
             db.unsubscribeUser(req.body['messenger user id'], reason, function sendStatus(){
                 res.sendStatus(200);
             });
@@ -152,7 +153,7 @@ app.post('/unsubscribe', function(req, res) {
 //    }
 //    else{
         //Didn't receive the right format
-    //    console.warn('unsubscribe data wasn\'t a page');
+    //    winston.log('info', 'unsubscribe data wasn\'t a page');
 //    }
 
 
@@ -166,12 +167,12 @@ function receivedMessage(event) {
     var timeOfMessage = event.timestamp;
     var message = event.message;
 
-    console.warn("Received message for user %d and page %d at %d with message:",
+    winston.log('info', "Received message for user %d and page %d at %d with message:",
         senderID, recipientID, timeOfMessage);
-//    console.log(JSON.stringify(message));
+//    winston.log('info', JSON.stringify(message));
 
     var messageId = message.mid;
-    console.warn(message.text);
+    winston.log('info', message.text);
     var messageText = message.text;
     var messageAttachments = message.attachments;
 
@@ -183,7 +184,7 @@ function receivedMessage(event) {
                 sendGenericMessage(senderID);
                 break;*/
             case 'image':
-                console.error('search for image', messageText);
+                winston.log('error', 'search for image', messageText);
                 //getAssetsByText(senderID, messageText);
                 getAssetsByText(senderID);
                 break;
@@ -195,7 +196,7 @@ function receivedMessage(event) {
             case 'it\'s too often.':
             case 'paintings are ugly':
             case 'i was just curious':
-                console.log('Got subscription feedback.');
+                winston.log('info', 'Got subscription feedback.');
             break;
             default:
 //                sendTextMessage(senderID, 'hej');
@@ -234,7 +235,7 @@ function getAssetsByText(recipientId, text){
     }
 
     dbRelated.searchFavoritesRelatedImagesByText(recipientId,text, outputData);
-    console.log("sending assets by text");
+    winston.log('info', "sending assets by text");
 
     function outputData(result){
         if(!result){
@@ -243,7 +244,7 @@ function getAssetsByText(recipientId, text){
 
         function output(result){
             if(result){
-                console.warn('heres the result',result);
+                winston.log('info', 'heres the result',result);
                 sendImageMessage(recipientId,result);
             }
             else{
@@ -264,7 +265,7 @@ function receivedPostback(event) {
     // button for Structured Messages.
     var payload = event.postback.payload;
 
-    console.log("Received postback for user %d and page %d with payload '%s' " +
+    winston.log('info', "Received postback for user %d and page %d with payload '%s' " +
         "at %d", senderID, recipientID, payload, timeOfPostback);
 
     // When a postback is called, we'll send a message back to the sender to
@@ -289,7 +290,7 @@ function sendTextMessage(recipientId, messageText) {
 }
 
 function sendImageMessage(recipientId,image_data){
-    console.warn(image_data);
+    winston.log('info', image_data);
     //db.insertSeenArt(recipientId,image_data.id);
     var messageData = {
         recipient: {
@@ -405,12 +406,12 @@ function callSendAPI(messageData, cb) {
             var recipientId = body.recipient_id;
             var messageId = body.message_id;
 
-            console.log("Successfully sent generic message with id %s to recipient %s",
+            winston.log('info', "Successfully sent generic message with id %s to recipient %s",
                 messageId, recipientId);
         } else {
-            console.error("Unable to send message.", response);
-//            console.error(response);
-//            console.error(error);
+            winston.log('error', "Unable to send message.", response);
+//            winston.log('error', response);
+//            winston.log('error', error);
         }
 
         if(cb){
@@ -421,8 +422,17 @@ function callSendAPI(messageData, cb) {
 
 //Send images to recipients every 24 hours (or so)
 /*var j = schedule.scheduleJob('* * * * *', function(){
-  console.log('Sending messages for recipients now!');
+  winston.log('info', 'Sending messages for recipients now!');
 });*/
+winston.add(winston.transports.File, {
+    filename: 'log.log',
+    timestamp: true,
+    humanReadableUnhandledException: true
+});
+
+winston.handleExceptions(new winston.transports.File({ filename: 'exceptions.log', humanReadableUnhandledException: true, exitOnError: false }));
+
+winston.remove(winston.transports.Console);
 
 // Set Express to listen out for HTTP requests
 var server = app.listen(process.env.PORT || 3000, function() {

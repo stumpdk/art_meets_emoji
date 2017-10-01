@@ -9,8 +9,10 @@ var pool  = mysql.createPool({
   database        : 'art_meets_emoji'
 });
 
-module.exports = {
-    subscribeUser: function(userId, cb){
+module.exports = function(winston){
+    var module = {};
+
+    module.subscribeUser = function(userId, cb){
 
         getSubscriber(userId, createOrUpdateExistingSubscription);
 
@@ -53,7 +55,7 @@ module.exports = {
         };
     },
 
-    unsubscribeUser: function(userId, reason, cb){
+    module.unsubscribeUser = function(userId, reason, cb){
         pool.query({
             sql: 'update user set enabled = 0, reason = ? WHERE id = ?',
             values: [reason, userId]
@@ -63,7 +65,7 @@ module.exports = {
         });
     },
 
-    getRelatedImages: function(userId, cb){
+    module.getRelatedImages = function(userId, cb){
             pool.query({
 
             }, function(error, result, fields){
@@ -71,8 +73,8 @@ module.exports = {
             });
     },
 
-    getImage: function(userId, cb){
-        console.warn('searching for images');
+    module.getImage = function(userId, cb){
+        winston.log('info', 'searching for images');
         pool.query({
             sql: 'select art.id,art.title,art.image_url,art.creation_date from art limit 5000',
         }, function(error, result, fields){
@@ -84,8 +86,8 @@ module.exports = {
         });
     },
 
-    searchImagesByText: function(userId, text, cb){
-        console.log('search art for keyword: ', text);
+    module.searchImagesByText = function(userId, text, cb){
+        winston.log('info', 'search art for keyword: ', text);
         text = "%"+text+"%"
         pool.query({
             sql: 'SELECT DISTINCT art.id,art.title,art.image_url,art.creation_date,group_concat(author.name) as author,type.name as type FROM art ' +
@@ -105,29 +107,29 @@ module.exports = {
             values: [text,text,text,text,userId]
         }, function (error, results, fields) {
             if (error) throw error;
-            console.log('The solution is: ', results[0]);
+            winston.log('info', 'The solution is: ', results[0]);
             cb(results[0]);
         });
     },
 
-    insertSeenArt: function (userId, artId) {
+    module.insertSeenArt = function (userId, artId) {
         pool.query({
             sql: 'INSERT INTO seen_art (art_id, user_id) VALUES (?,?)',
             values: [user_id, art_id]
         }, function(error, results, fields){
             if(error) throw error;
-            console.warn('saved seen_art');
+            winston.log('info', 'saved seen_art');
         });
     },
 
-    saveResponse(art_id, user_id, response, cb){
-        console.warn(user_id);
+    module.saveResponse = function(art_id, user_id, response, cb){
+        winston.log('info', user_id);
         pool.query({
             sql: 'INSERT INTO reaction (user_id, art_id, positive, time_for_reaction) VALUES (?,?,?, NOW())',
             values: [user_id, art_id, response]
         }, function(error, results, fields){
             if(error) throw error;
-            console.warn('saved user reaction');
+            winston.log('info', 'saved user reaction');
 
             if(cb){
                 cb();
@@ -135,7 +137,7 @@ module.exports = {
         });
     },
 
-    saveTags(user_id, tags, cb){
+    module.saveTags = function(user_id, tags, cb){
         //Check the latest artwork that the user responded to
         pool.query({
             sql: 'SELECT * FROM reaction WHERE user_id = ?',
@@ -156,7 +158,7 @@ module.exports = {
                 query = query + ' (' + user_id + ', ' + art_id + ', \'' + tags[i] + '\'),'
             }
             query = query.substring(0, query.length - 1);
-            console.log(query);
+            winston.log('info', query);
             if(tags.length == 0){
                 cb();
                 return;
@@ -173,4 +175,6 @@ module.exports = {
             });
         };
     }
+
+    return module;
 };
