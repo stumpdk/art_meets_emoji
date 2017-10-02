@@ -22,7 +22,7 @@ Run `npm install`
 ## Beautify files
 Run `grunt`
 
-## Test call
+## Test call, message
 `
 {
 	"object":"page",
@@ -37,4 +37,31 @@ Run `grunt`
 		}
 	]
 }
+`
+
+## Test call, postback
+`
+{
+	"object":"page",
+
+	"entry": [
+		{
+			"id":"p98439504",
+			"messaging":[
+				{	"sender" : {"id":12312},
+					"postback":{
+					    "title": "unsubscribe_reason",  
+					    "payload": "{\"type\": \"unsubscribe_reason\",\"art_id\": \"2114\",\"reaction\": \"too_often\",\"user_id\": 423334}",
+						"sender": {"id": 234234},
+						"recipient": {"id": 567575675},
+					    "referral": {
+					      "ref": "<USER_DEFINED_REFERRAL_PARAM>",
+					      "source": "<SHORTLINK>",
+					      "type": "OPEN_THREAD"
+					    }
+					}
+				}]
+		}
+	]
+} 
 `

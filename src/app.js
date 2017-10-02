@@ -68,26 +68,24 @@ app.post('/webhook', function(req, res) {
             var pageID = entry.id;
             var timeOfEvent = entry.time;
 
-            if (!entry.messaging) {
-                winston.log('info', 'unhandled event:', entry);
-            } else {
-
                 // Iterate over each messaging event
                 entry.messaging.forEach(function(event) {
+                    if(event.get_started){
+                        sendTextMessage(event.sender.id, 'Velkommen!');
+                    }
                     if (event.message) {
                         winston.log('info', "received message", event);
                         receivedMessage(event);
                     } else if (event.postback) {
                         //receivedPostback(event);
                         winston.log('info', "received postback", event);
-                        handlePostBack(event.postback);
+                        handlePostBack(event.postback, event.sender.id, res);
                     } else if (event.read) {
                         winston.log('info', "received read event");
                     } else {
                         winston.log('info', "Webhook received unknown event: ", event);
                     }
                 });
-            }
         });
 
         // Assume all went well.
@@ -101,15 +99,64 @@ app.post('/webhook', function(req, res) {
     res.sendStatus(200);
 });
 
-function handlePostBack(postback) {
+function handlePostBack(postback, user_id, res) {
+    console.warn('trying to parse:', postback);
     var payload = JSON.parse(postback.payload);
-    db.saveResponse(payload.art_id, payload.user_id, payload.reaction, respondOnPostback);
 
-    function respondOnPostback() {
-        if (payload.reaction == 0) {
-            sendTextMessage(payload.user_id, 'Got that. You won\'t get art like that again.');
-        } else {
-            sendTextMessage(payload.user_id, 'Got that. Glad you liked it! :)');
+    //Postback actions:
+    //subscribe (payload.type*)
+    //unsubscribe (payload.type*)
+    //unsubscribe_reason (payload.type*, payload.reason*, payload.art_id*)
+    //image_reaction (payload.type*,payload.art_id*, payload.reaction*)
+
+    switch(payload.type){
+        case 'subscribe':
+            subscribe(payload);
+        break;
+        case 'unsubscribe':
+            unsubscribe(payload);
+        break;
+        case 'unsubscribe_reason':
+            unsubscribeReason(payload);
+        break;
+        case 'image_reaction':
+            saveImageResponse(payload);
+        break;
+        default:
+            winston.log('warn', 'unhandled postback type. This is the payload: ' + payload);
+    }
+
+
+    function subscribe(payload){
+        db.subscribeUser(user_id, function(){
+            res.sendStatus(200);
+        });
+    }
+
+    function unsubscribe(payload){
+        winston.log('info', 'unsubscribe for user ' + user_id);
+        var reason = null;
+        db.unsubscribeUser(user_id, reason, function sendStatus() {
+            sendUnsubscribeReasonButton();
+        });
+    }
+
+    function unsubscribeReason(payload){
+        var reason =  payload.reason;
+        db.unsubscribeUser(user_id, reason, function sendStatus() {
+            sendTextMessage(payload.user_id, 'Okay. Got it. Hopefully we\'ll see you again. :)');
+        });
+    }
+
+    function saveImageResponse(payload){
+        db.saveResponse(payload.art_id, user_id, payload.reaction, respondOnPostback);
+
+        function respondOnPostback() {
+            if (payload.reaction == 0) {
+                sendTextMessage(payload.user_id, 'Got that. You won\'t get art like that again.');
+            } else {
+                sendTextMessage(payload.user_id, 'Got that. Glad you liked it! :)');
+            }
         }
     }
 }
@@ -324,6 +371,54 @@ function sendRespondButtons(recipientId, image_title, art_id) {
                                 reaction: 0,
                                 user_id: recipientId
                             }),
+                        }],
+                    }],
+                }
+            }
+        }
+    };
+    callSendAPI(messageData);
+}
+
+function sendUnsubscribeReasonButton(recipientId, art_id) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            attachment: {
+                type: "template",
+                payload: {
+                    template_type: "generic",
+                    elements: [{
+                        title: 'You will not receive any more pictures from us. \n We could really use a bit of feedback, so please let us know why you don\'t want daily pictures anymore:',
+                        buttons: [{
+                            type: "postback",
+                            title: "It's too often",
+                            payload: JSON.stringify({
+                                type: 'unsubscribe_reason',
+                                art_id: art_id,
+                                reaction: 'too_often',
+                                user_id: recipientId
+                            }),
+                        }, {
+                            type: "postback",
+                            title: "Paintings are ugly",
+                            payload: JSON.stringify({
+                                type: 'unsubscribe_reason',
+                                art_id: art_id,
+                                reaction: 'painting_are_ugly',
+                                user_id: recipientId
+                            }),
+                        }, {
+                            type: "postback",
+                            title: "I was just curious",
+                            payload: JSON.stringify({
+                                type: 'unsubscribe_reason',
+                                art_id: art_id,
+                                reaction: 'just_curious',
+                                user_id: recipientId
+                            })
                         }],
                     }],
                 }
