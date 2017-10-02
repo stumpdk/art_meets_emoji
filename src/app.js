@@ -380,13 +380,12 @@ if (process.env.MODE && process.env.MODE.toLowerCase() == 'dev') {
     winston.add(winston.transports.File, {
         filename: 'log.log',
         timestamp: true,
-        humanReadableUnhandledException: true
     });
 
     winston.handleExceptions(new winston.transports.File({
         filename: 'exceptions.log',
-        humanReadableUnhandledException: true,
-        exitOnError: false
+        timestamp: true,
+        humanReadableUnhandledException: true
     }));
 
     winston.remove(winston.transports.Console);

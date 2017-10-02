@@ -88,26 +88,33 @@ module.exports = function(winston) {
         module.searchImagesByText = function(userId, text, cb) {
             winston.log('info', 'search art for keyword: ', text);
             text = "%" + text + "%"
+            var query = 'SELECT DISTINCT art.id,art.title,art.image_url,art.creation_date,group_concat(author.name) as author,type.name as type FROM art ' +
+                ' JOIN art_author ON art.id = art_author.art_id ' +
+                ' JOIN  author ON art_author.author_id = author.id' +
+                ' JOIN  type ON art.type_id = type.id' +
+                ' LEFT OUTER JOIN seen_art ON seen_art.art_id = art.id' +
+                ' LEFT OUTER JOIN  tag ON tag.art_id = art.id' +
+                ' WHERE ' +
+                ' (art.title LIKE ? OR' +
+                ' author.name LIKE ? OR' +
+                ' art.creation_date LIKE ? OR' +
+                ' tag.value LIKE ?)' +
+                ' AND (seen_art.user_id is null OR seen_art.user_id != ?)' +
+                ' GROUP BY art.id' +
+                ' ORDER BY count(art.id) DESC LIMIT 100';
+
             pool.query({
-                sql: 'SELECT DISTINCT art.id,art.title,art.image_url,art.creation_date,group_concat(author.name) as author,type.name as type FROM art ' +
-                    ' JOIN art_author ON art.id = art_author.art_id ' +
-                    ' JOIN  author ON art_author.author_id = author.id' +
-                    ' JOIN  type ON art.type_id = type.id' +
-                    ' LEFT OUTER JOIN seen_art ON seen_art.art_id = art.id' +
-                    ' LEFT OUTER JOIN  tag ON tag.art_id = art.id' +
-                    ' WHERE ' +
-                    ' (art.title LIKE ? OR' +
-                    ' author.name LIKE ? OR' +
-                    ' art.creation_date LIKE ? OR' +
-                    ' tag.value LIKE ?)' +
-                    ' AND (seen_art.user_id is null OR seen_art.user_id != ?)' +
-                    ' GROUP BY art.id' +
-                    ' ORDER BY count(art.id) DESC LIMIT 100',
+                sql: query,
                 values: [text, text, text, text, userId]
             }, function(error, results, fields) {
                 if (error) throw error;
                 winston.log('info', 'Results from the text search: ', results.length);
-                var randomId = Math.floor(Math.random() * result.length - 1) + 1;
+                var randomId = Math.floor(Math.random() * results.length - 1) + 1;
+
+                if(!results || !results[randomId]){
+                    cb();
+                    return;
+                }
                 cb(results[randomId]);
             });
         },
