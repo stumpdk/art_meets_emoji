@@ -2,11 +2,11 @@ var mysql = require('mysql');
 
 var pool = mysql.createPool({
     connectionLimit: 10,
-    host: 'localhost',
-    port: 3307,
-    user: 'root',
-    password: 'example',
-    database: 'art_meets_emoji'
+    host: process.env.RDS_HOSTNAME,
+    port: process.env.RDS_PORT,
+    user: process.env.RDS_USERNAME,
+    password: process.env.RDS_PASSWORD,
+    database: process.env.RDS_DB_NAME
 });
 
 module.exports = function(winston) {
@@ -106,15 +106,16 @@ module.exports = function(winston) {
                 values: [text, text, text, text, userId]
             }, function(error, results, fields) {
                 if (error) throw error;
-                winston.log('info', 'The solution is: ', results[0]);
+                winston.log('info', 'Results from the text search: ', results.length);
                 cb(results[0]);
             });
         },
 
         module.insertSeenArt = function(userId, artId) {
+            console.log('seen art', userId, artId);
             pool.query({
-                sql: 'INSERT INTO seen_art (art_id, user_id) VALUES (?,?)',
-                values: [user_id, art_id]
+                sql: 'INSERT INTO seen_art (user_id, art_id) VALUES (?,?)',
+                values: [userId, artId]
             }, function(error, results, fields) {
                 if (error) throw error;
                 winston.log('info', 'saved seen_art');

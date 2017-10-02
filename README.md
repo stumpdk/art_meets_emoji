@@ -21,3 +21,20 @@ Run `npm install`
 
 ## Beautify files
 Run `grunt`
+
+## Test call
+`
+{
+	"object":"page",
+	"entry": [
+		{
+			"messaging":[
+				{
+					"message":{ "text": "image?"},
+					"sender": {"id": 234234},
+					"recipient": {"id": 567575675}
+				}]
+		}
+	]
+}
+`

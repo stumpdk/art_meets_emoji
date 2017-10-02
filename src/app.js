@@ -75,16 +75,16 @@ app.post('/webhook', function(req, res) {
                 // Iterate over each messaging event
                 entry.messaging.forEach(function(event) {
                     if (event.message) {
+                        winston.log('info', "received message", event);
                         receivedMessage(event);
-                        winston.log('error', "received message", event);
                     } else if (event.postback) {
                         //receivedPostback(event);
-                        winston.log('error', "received postback", event);
+                        winston.log('info', "received postback", event);
                         handlePostBack(event.postback);
                     } else if (event.read) {
-                        winston.log('error', "received read event");
+                        winston.log('info', "received read event");
                     } else {
-                        winston.log('error', "Webhook received unknown event: ", event);
+                        winston.log('info', "Webhook received unknown event: ", event);
                     }
                 });
             }
@@ -169,7 +169,7 @@ function receivedMessage(event) {
     //    winston.log('info', JSON.stringify(message));
 
     var messageId = message.mid;
-    winston.log('info', message.text);
+    winston.log('info', message.message);
     var messageText = message.text;
     var messageAttachments = message.attachments;
 
@@ -177,43 +177,31 @@ function receivedMessage(event) {
         // If we receive a text message, check to see if it matches a keyword
         // and send back the template example. Otherwise, just echo the text we received.
         switch (messageText.toLowerCase()) {
-            /*case 'generic':
-                sendGenericMessage(senderID);
-                break;*/
+            //Return a random image
             case 'image':
-                winston.log('error', 'search for image', messageText);
-                //getAssetsByText(senderID, messageText);
+                winston.log('info', 'search for image ' + messageText);
                 getAssetsByText(senderID);
                 break;
-                //break;
-                /*    case 'text':
-                        sendTextMessage(senderID, 'hej');
-                        break;*/
 
+                //Reponse on unsubscription
             case 'it\'s too often.':
             case 'paintings are ugly':
             case 'i was just curious':
                 winston.log('info', 'Got subscription feedback.');
                 break;
-            default:
-                //                sendTextMessage(senderID, 'hej');
-                //sendImageMessage(senderID);
 
-                //Check for question mark
+                //Search art by keyword or get tags from sentence
+            default:
+                //If question get image by description, artist or tag
                 if (messageText.indexOf('?') !== -1) {
-                    //var keyword = messageText.split()
                     var n = messageText.split(" ");
+                    winston.log('info', 'Searching for', n);
                     getAssetsByText(senderID, n[n.length - 1].replace('?', ''));
                 } else {
-                    //Otherwise get NERs from sentence
-                    //db.save(NER.get(), sendThankYou);
+                    //Save tags for image
                     var n = messageText.split(" ");
-
+                    winston.log('info', 'Saving', n);
                     db.saveTags(senderID, n, sendThankYouMessage);
-
-                    function sendThankYouMessage() {
-                        sendTextMessage(senderID, 'Thank you for your input, I can probaply use it for the image!');
-                    }
                 }
 
                 break;
@@ -221,57 +209,52 @@ function receivedMessage(event) {
     } else if (messageAttachments) {
         //        sendTextMessage(senderID, "Message with attachment received");
     }
+
+    function sendThankYouMessage() {
+        sendTextMessage(senderID, 'Thank you for your input, I can probaply use it for the image!');
+    }
 }
 
 function getAssetsByText(recipientId, text) {
     if (text == undefined) {
         text = "";
-        db.getImage(recipientId, outputData);
+        db.getImage(recipientId, sendResultAsImageOrSearchByText);
         return;
     }
 
-    dbRelated.searchFavoritesRelatedImagesByText(recipientId, text, outputData);
-    winston.log('info', "sending assets by text");
+    dbRelated.searchFavoritesRelatedImagesByText(recipientId, text, sendResultAsImageOrSearchByText);
 
-    function outputData(result) {
+
+    function sendResultAsImageOrSearchByText(result) {
+
         if (!result) {
-            db.searchImagesByText(recipientId, text, output);
+            console.log('!result');
+            winston.log('info', 'no result when searching for related images. Trying to search by text: ' + text);
+            db.searchImagesByText(recipientId, text, sendImageOrNoResultsText);
+            return;
         }
+        console.log('here is the result: ', result.id, result.title);
 
-        function output(result) {
-            if (result) {
-                winston.log('info', 'heres the result', result);
-                sendImageMessage(recipientId, result);
-            } else {
-                sendTextMessage(recipientId, "Sorry, I couldn't find anything for you. Want a random painting? Write \"image\". Looking for something particular? Write a name, year, or title and an \"?\" Then we'll go through our collection to see if we have something for you!");
-            }
+        sendImageOrNoResultsText(result);
+    }
+
+    function sendImageOrNoResultsText(result) {
+        console.log('sendImageOrNoResultsText');
+        if (result) {
+            winston.log('info', 'heres the result', result.id, result.title);
+            sendImageMessage(recipientId, result);
+        } else {
+            winston.log('info', "could not find anyting, sending sorry message");
+            sendTextMessage(recipientId, "Sorry, I couldn't find anything for you. Want a random painting? Write \"image\". Looking for something particular? Write a name, year, or title and an \"?\" Then we'll go through our collection to see if we have something for you!");
         }
-
     }
 }
 
-/*
-function receivedPostback(event) {
-    var senderID = event.sender.id;
-    var recipientID = event.recipient.id;
-    var timeOfPostback = event.timestamp;
-
-    // The 'payload' param is a developer-defined field which is set in a postback
-    // button for Structured Messages.
-    var payload = event.postback.payload;
-
-    winston.log('info', "Received postback for user %d and page %d with payload '%s' " +
-        "at %d", senderID, recipientID, payload, timeOfPostback);
-
-    // When a postback is called, we'll send a message back to the sender to
-    // let them know it was successful
-    sendTextMessage(senderID, "Postback called");
-}
-*/
 //////////////////////////
 // Sending helpers
 //////////////////////////
 function sendTextMessage(recipientId, messageText) {
+    winston.log('info', 'sending text' + messageText);
     var messageData = {
         recipient: {
             id: recipientId
@@ -285,8 +268,8 @@ function sendTextMessage(recipientId, messageText) {
 }
 
 function sendImageMessage(recipientId, image_data) {
-    winston.log('info', image_data);
-    //db.insertSeenArt(recipientId,image_data.id);
+    winston.log('info', 'sending image');
+    db.insertSeenArt(recipientId, image_data.id);
     var messageData = {
         recipient: {
             id: recipientId
@@ -351,6 +334,14 @@ function sendRespondButtons(recipientId, image_title, art_id) {
 }
 
 function callSendAPI(messageData, cb) {
+    if (process.env.mode && process.env.mode.toLowerCase() == 'dev') {
+        winston.log('info', 'if not in dev mode, this would be sent: ', messageData);
+        if (cb) {
+            cb();
+        }
+        return;
+    }
+
     request({
         uri: 'https://graph.facebook.com/v2.6/me/messages',
         qs: {
@@ -382,7 +373,7 @@ function callSendAPI(messageData, cb) {
   winston.log('info', 'Sending messages for recipients now!');
 });*/
 
-if (process.env.MODE && process.env.MODE == 'dev') {
+if (process.env.MODE && process.env.MODE.toLowerCase() == 'dev') {
     console.log('running in dev mode');
 } else {
     winston.add(winston.transports.File, {
