@@ -28,24 +28,20 @@ module.exports = function(grunt) {
             options: {
                 spawn: false
             },
-            testi: {
-                files: [' app.js', './Gruntfile.js'],
-                tasks: ['jsbeautifier', 'run:node'],
-            },
-            sourcesy: {
-                files: ['Gruntfile.js', 'app.js', '**/*.js'],
-                tasks: ['run:node']
+            beautify: {
+                files: ['Gruntfile.js', './src/**/*.js'],
+                tasks: ['jsbeautifier']
             }
 
         },
-        "jsbeautifier": {
-            files: ["./src/**/*.js"],
+        jsbeautifier: {
+            files: ['Gruntfile.js', './src/**/*.js'],
             options: {}
         }
     });
 
 
     grunt.registerTask('node', ['run:node']);
-    grunt.registerTask('default', ['jsbeautifier']);
-    grunt.registerTask('watchify', ['watch:testi']);
+    grunt.registerTask('beautify', ['jsbeautifier']);
+    grunt.registerTask('default', ['watch:beautify']);
 };
