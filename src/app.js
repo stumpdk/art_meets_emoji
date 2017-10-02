@@ -424,15 +424,22 @@ function callSendAPI(messageData, cb) {
 /*var j = schedule.scheduleJob('* * * * *', function(){
   winston.log('info', 'Sending messages for recipients now!');
 });*/
-winston.add(winston.transports.File, {
-    filename: 'log.log',
-    timestamp: true,
-    humanReadableUnhandledException: true
-});
 
-winston.handleExceptions(new winston.transports.File({ filename: 'exceptions.log', humanReadableUnhandledException: true, exitOnError: false }));
+if(process.env.MODE && process.env.MODE == 'dev'){
+    console.log('running in dev mode');
+}
+else{
+    winston.add(winston.transports.File, {
+        filename: 'log.log',
+        timestamp: true,
+        humanReadableUnhandledException: true
+    });
 
-winston.remove(winston.transports.Console);
+    winston.handleExceptions(new winston.transports.File({ filename: 'exceptions.log', humanReadableUnhandledException: true, exitOnError: false }));
+
+    winston.remove(winston.transports.Console);
+}
+
 
 // Set Express to listen out for HTTP requests
 var server = app.listen(process.env.PORT || 3000, function() {
