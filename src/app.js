@@ -308,7 +308,7 @@ function sendRespondButtons(recipientId, image_title, art_id) {
                         //item_url: image_data.image_url,
                         buttons: [{
                             type: "postback",
-                            title: "Nice!",
+                            title: "Nice! 😍",
                             payload: JSON.stringify({
                                 type: 'reaction',
                                 art_id: art_id,
@@ -317,7 +317,7 @@ function sendRespondButtons(recipientId, image_title, art_id) {
                             }),
                         }, {
                             type: "postback",
-                            title: "Nah!",
+                            title: "Nah... 😒",
                             payload: JSON.stringify({
                                 type: 'reaction',
                                 art_id: art_id,
@@ -336,6 +336,7 @@ function sendRespondButtons(recipientId, image_title, art_id) {
 function callSendAPI(messageData, cb) {
     if (process.env.mode && process.env.mode.toLowerCase() == 'dev') {
         winston.log('info', 'if not in dev mode, this would be sent: ', messageData);
+        winston.log('info', 'with this token' + process.env.ACCESS_TOKEN);
         if (cb) {
             cb();
         }
