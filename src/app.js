@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({
 // Webhook validation
 app.get('/webhook', function(req, res) {
     if (req.query['hub.mode'] === 'subscribe' &&
-        req.query['hub.verify_token'] === (process.env.VERIFY_TOKEN || 'test')/*process.env.VERIFY_TOKEN*/) {
+        req.query['hub.verify_token'] === (process.env.VERIFY_TOKEN || 'test') /*process.env.VERIFY_TOKEN*/ ) {
         winston.log('info', "Validating webhook");
         res.status(200).send(req.query['hub.challenge']);
     } else {
@@ -68,21 +68,20 @@ app.post('/webhook', function(req, res) {
             var pageID = entry.id;
             var timeOfEvent = entry.time;
 
-            if(!entry.messaging){
+            if (!entry.messaging) {
                 winston.log('info', 'unhandled event:', entry);
-            }
-            else{
+            } else {
 
                 // Iterate over each messaging event
                 entry.messaging.forEach(function(event) {
                     if (event.message) {
                         receivedMessage(event);
-                        winston.log('error', "received message",event);
+                        winston.log('error', "received message", event);
                     } else if (event.postback) {
                         //receivedPostback(event);
                         winston.log('error', "received postback", event);
                         handlePostBack(event.postback);
-                    } else if (event.read){
+                    } else if (event.read) {
                         winston.log('error', "received read event");
                     } else {
                         winston.log('error', "Webhook received unknown event: ", event);
@@ -102,38 +101,36 @@ app.post('/webhook', function(req, res) {
     res.sendStatus(200);
 });
 
-function handlePostBack(postback){
+function handlePostBack(postback) {
     var payload = JSON.parse(postback.payload);
     db.saveResponse(payload.art_id, payload.user_id, payload.reaction, respondOnPostback);
 
-    function respondOnPostback(){
-        if(payload.reaction == 0){
-            sendTextMessage(payload.user_id, 'Got that. You won\'t get art like that again.' );
-        }
-        else{
+    function respondOnPostback() {
+        if (payload.reaction == 0) {
+            sendTextMessage(payload.user_id, 'Got that. You won\'t get art like that again.');
+        } else {
             sendTextMessage(payload.user_id, 'Got that. Glad you liked it! :)');
         }
     }
 }
 
-app.post('/subscribe', function(req, res){
+app.post('/subscribe', function(req, res) {
     winston.log('info', db);
     winston.log('info', 'subscribe endpoint reached');
 
     var data = req.body;
     //if(data.object === 'page'){
-        if(req.body['messenger user id']){
-            winston.log('info', data.entry);
-            db.subscribeUser(req.body['messenger user id'])
-        }
-        else{
-            winston.log('info', 'message user id not set!');
-        }
-//    }
-//    else{
-        //Didn't receive the right format
-//        winston.log('info', 'subscribe data wasn\'t a page');
-//    }
+    if (req.body['messenger user id']) {
+        winston.log('info', data.entry);
+        db.subscribeUser(req.body['messenger user id'])
+    } else {
+        winston.log('info', 'message user id not set!');
+    }
+    //    }
+    //    else{
+    //Didn't receive the right format
+    //        winston.log('info', 'subscribe data wasn\'t a page');
+    //    }
 
     res.sendStatus(200);
 });
@@ -143,18 +140,18 @@ app.post('/unsubscribe', function(req, res) {
 
     var data = req.body;
     //if(data.object === 'page'){
-        if(req.body['messenger user id']){
-            var reason =  req.query.reason || false;
-            winston.log('info', data.entry);
-            db.unsubscribeUser(req.body['messenger user id'], reason, function sendStatus(){
-                res.sendStatus(200);
-            });
-        }
-//    }
-//    else{
-        //Didn't receive the right format
+    if (req.body['messenger user id']) {
+        var reason = req.query.reason || false;
+        winston.log('info', data.entry);
+        db.unsubscribeUser(req.body['messenger user id'], reason, function sendStatus() {
+            res.sendStatus(200);
+        });
+    }
+    //    }
+    //    else{
+    //Didn't receive the right format
     //    winston.log('info', 'unsubscribe data wasn\'t a page');
-//    }
+    //    }
 
 
 
@@ -169,7 +166,7 @@ function receivedMessage(event) {
 
     winston.log('info', "Received message for user %d and page %d at %d with message:",
         senderID, recipientID, timeOfMessage);
-//    winston.log('info', JSON.stringify(message));
+    //    winston.log('info', JSON.stringify(message));
 
     var messageId = message.mid;
     winston.log('info', message.text);
@@ -189,33 +186,32 @@ function receivedMessage(event) {
                 getAssetsByText(senderID);
                 break;
                 //break;
-        /*    case 'text':
-                sendTextMessage(senderID, 'hej');
-                break;*/
+                /*    case 'text':
+                        sendTextMessage(senderID, 'hej');
+                        break;*/
 
             case 'it\'s too often.':
             case 'paintings are ugly':
             case 'i was just curious':
                 winston.log('info', 'Got subscription feedback.');
-            break;
+                break;
             default:
-//                sendTextMessage(senderID, 'hej');
+                //                sendTextMessage(senderID, 'hej');
                 //sendImageMessage(senderID);
 
                 //Check for question mark
-                if(messageText.indexOf('?') !== -1){
+                if (messageText.indexOf('?') !== -1) {
                     //var keyword = messageText.split()
                     var n = messageText.split(" ");
                     getAssetsByText(senderID, n[n.length - 1].replace('?', ''));
-                }
-                else{
+                } else {
                     //Otherwise get NERs from sentence
                     //db.save(NER.get(), sendThankYou);
                     var n = messageText.split(" ");
 
                     db.saveTags(senderID, n, sendThankYouMessage);
 
-                    function sendThankYouMessage(){
+                    function sendThankYouMessage() {
                         sendTextMessage(senderID, 'Thank you for your input, I can probaply use it for the image!');
                     }
                 }
@@ -223,31 +219,30 @@ function receivedMessage(event) {
                 break;
         }
     } else if (messageAttachments) {
-//        sendTextMessage(senderID, "Message with attachment received");
+        //        sendTextMessage(senderID, "Message with attachment received");
     }
 }
 
-function getAssetsByText(recipientId, text){
-    if(text == undefined){
+function getAssetsByText(recipientId, text) {
+    if (text == undefined) {
         text = "";
         db.getImage(recipientId, outputData);
         return;
     }
 
-    dbRelated.searchFavoritesRelatedImagesByText(recipientId,text, outputData);
+    dbRelated.searchFavoritesRelatedImagesByText(recipientId, text, outputData);
     winston.log('info', "sending assets by text");
 
-    function outputData(result){
-        if(!result){
+    function outputData(result) {
+        if (!result) {
             db.searchImagesByText(recipientId, text, output);
         }
 
-        function output(result){
-            if(result){
-                winston.log('info', 'heres the result',result);
-                sendImageMessage(recipientId,result);
-            }
-            else{
+        function output(result) {
+            if (result) {
+                winston.log('info', 'heres the result', result);
+                sendImageMessage(recipientId, result);
+            } else {
                 sendTextMessage(recipientId, "Sorry, I couldn't find anything for you. Want a random painting? Write \"image\". Looking for something particular? Write a name, year, or title and an \"?\" Then we'll go through our collection to see if we have something for you!");
             }
         }
@@ -289,31 +284,31 @@ function sendTextMessage(recipientId, messageText) {
     callSendAPI(messageData);
 }
 
-function sendImageMessage(recipientId,image_data){
+function sendImageMessage(recipientId, image_data) {
     winston.log('info', image_data);
     //db.insertSeenArt(recipientId,image_data.id);
     var messageData = {
         recipient: {
             id: recipientId
         },
-        message:{
-    attachment:{
-      type:"image",
-      payload:{
-        url:image_data.image_url
-      }
-    }
-  }
+        message: {
+            attachment: {
+                type: "image",
+                payload: {
+                    url: image_data.image_url
+                }
+            }
+        }
     };
 
     callSendAPI(messageData, sendButtons);
 
-    function sendButtons(){
+    function sendButtons() {
         sendRespondButtons(recipientId, image_data.title, image_data.id);
     };
 }
 
-function sendRespondButtons(recipientId, image_title, art_id){
+function sendRespondButtons(recipientId, image_title, art_id) {
     var messageData = {
         recipient: {
             id: recipientId
@@ -329,14 +324,24 @@ function sendRespondButtons(recipientId, image_title, art_id){
                         //image_url: image_data.image_url,
                         //item_url: image_data.image_url,
                         buttons: [{
-              type: "postback",
-              title: "Nice!",
-              payload: JSON.stringify({type: 'reaction', art_id: art_id, reaction:1, user_id: recipientId}),
-          },{
-            type: "postback",
-            title: "Nah!",
-            payload: JSON.stringify({type: 'reaction', art_id: art_id, reaction:0, user_id: recipientId}),
-            }],
+                            type: "postback",
+                            title: "Nice!",
+                            payload: JSON.stringify({
+                                type: 'reaction',
+                                art_id: art_id,
+                                reaction: 1,
+                                user_id: recipientId
+                            }),
+                        }, {
+                            type: "postback",
+                            title: "Nah!",
+                            payload: JSON.stringify({
+                                type: 'reaction',
+                                art_id: art_id,
+                                reaction: 0,
+                                user_id: recipientId
+                            }),
+                        }],
                     }],
                 }
             }
@@ -410,11 +415,11 @@ function callSendAPI(messageData, cb) {
                 messageId, recipientId);
         } else {
             winston.log('error', "Unable to send message.", response);
-//            winston.log('error', response);
-//            winston.log('error', error);
+            //            winston.log('error', response);
+            //            winston.log('error', error);
         }
 
-        if(cb){
+        if (cb) {
             cb();
         }
     });
@@ -425,17 +430,20 @@ function callSendAPI(messageData, cb) {
   winston.log('info', 'Sending messages for recipients now!');
 });*/
 
-if(process.env.MODE && process.env.MODE == 'dev'){
+if (process.env.MODE && process.env.MODE == 'dev') {
     console.log('running in dev mode');
-}
-else{
+} else {
     winston.add(winston.transports.File, {
         filename: 'log.log',
         timestamp: true,
         humanReadableUnhandledException: true
     });
 
-    winston.handleExceptions(new winston.transports.File({ filename: 'exceptions.log', humanReadableUnhandledException: true, exitOnError: false }));
+    winston.handleExceptions(new winston.transports.File({
+        filename: 'exceptions.log',
+        humanReadableUnhandledException: true,
+        exitOnError: false
+    }));
 
     winston.remove(winston.transports.Console);
 }
