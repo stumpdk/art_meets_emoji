@@ -1,11 +1,11 @@
 version: "2"
 services:
-  web:
-    image: node
-    ports:
-      - "3000:3000"
-    links:
-      - db
+#  web:
+#    image: node
+#    ports:
+#      - "3000:3000"
+#    links:
+#      - db
   db:
     image: mysql
     volumes:
