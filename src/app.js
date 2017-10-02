@@ -345,7 +345,7 @@ function callSendAPI(messageData, cb) {
     request({
         uri: 'https://graph.facebook.com/v2.6/me/messages',
         qs: {
-            access_token: 'EAAMZC2kJZAfcgBAFwJjoZBxp8VqdqOKj32LygDJfb8VudmgiwbOTG4tlfbVu54WHGR9SAaiSHOmsZBSwnuWinveQi6ZCWt2YgtSrDSQz9ZA5SNhDRZBz8SHUJR6zuyZA7xK2tfJEJSOFNzM5mXFUUhggTQ3tO3KFw6BkMrtHm1SZAZAAZDZD'
+            access_token: process.env.ACCESS_TOKEN
         },
         method: 'POST',
         json: messageData,
