@@ -102,12 +102,13 @@ module.exports = function(winston) {
                     ' tag.value LIKE ?)' +
                     ' AND (seen_art.user_id is null OR seen_art.user_id != ?)' +
                     ' GROUP BY art.id' +
-                    ' ORDER BY count(art.id) DESC LIMIT 1',
+                    ' ORDER BY count(art.id) DESC LIMIT 100',
                 values: [text, text, text, text, userId]
             }, function(error, results, fields) {
                 if (error) throw error;
                 winston.log('info', 'Results from the text search: ', results.length);
-                cb(results[0]);
+                var randomId = Math.floor(Math.random() * result.length - 1) + 1;
+                cb(results[randomId]);
             });
         },
 
