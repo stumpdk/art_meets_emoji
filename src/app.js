@@ -71,6 +71,7 @@ app.post('/webhook', function(req, res) {
                 // Iterate over each messaging event
                 entry.messaging.forEach(function(event) {
                     if(event.get_started){
+                        winston.log('info', "received get_started as message", event);
                         sendTextMessage(event.sender.id, 'Velkommen!');
                     }
                     if (event.message) {
@@ -126,7 +127,7 @@ function handlePostBack(postback, user_id, res) {
             sendTextMessage(user_id, 'Welcome.:)')
         break;
         default:
-            winston.log('warn', 'unhandled postback type. This is the payload: ', payload);
+            winston.log('warn', 'unhandled postback type. This is the postback: ', postback);
     }
 
 
