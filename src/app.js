@@ -122,6 +122,9 @@ function handlePostBack(postback, user_id, res) {
         case 'image_reaction':
             saveImageResponse(payload);
         break;
+        case 'get_started':
+            sendTextMessage(user_id, 'Welcome.:)')
+        break;
         default:
             winston.log('warn', 'unhandled postback type. This is the payload: ' + payload);
     }

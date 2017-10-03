@@ -1,3 +1,5 @@
+//thread_settings
+
 {
   "setting_type" : "call_to_actions",
   "thread_state" : "new_thread",
@@ -20,4 +22,14 @@
         "payload":"{\"type\": \"unsubscribe\"}"
       }
   ]
+}
+
+
+/messenger_profile
+{"greeting":[
+  {
+    "locale":"default",
+    "text":"Welcome to Art meets Emooji."
+  }
+]
 }
