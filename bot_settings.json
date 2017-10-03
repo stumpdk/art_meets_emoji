@@ -1,5 +1,10 @@
-//thread_settings
+Check settings:
+GET https://graph.facebook.com/v2.6/me/messenger_profile?fields=greeting,get_started,persistent_menu&access_token
 
+Set settings:
+POST
+
+//thread_settings
 {
   "setting_type" : "call_to_actions",
   "thread_state" : "new_thread",
@@ -32,4 +37,11 @@
     "text":"Welcome to Art meets Emooji."
   }
 ]
+}
+
+//get_started
+{
+  "get_started":{
+    "payload":{"type": "get_stated"}
+  }
 }

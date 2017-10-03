@@ -100,7 +100,7 @@ app.post('/webhook', function(req, res) {
 });
 
 function handlePostBack(postback, user_id, res) {
-    console.warn('trying to parse:', postback);
+    winston.log('info','postback received',postback);
     var payload = JSON.parse(postback.payload);
 
     //Postback actions:
