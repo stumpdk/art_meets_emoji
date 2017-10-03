@@ -1,5 +1,5 @@
 Check settings:
-GET https://graph.facebook.com/v2.6/me/messenger_profile?fields=greeting,get_started,persistent_menu&access_token
+GET https://graph.facebook.com/v2.6/me/messenger_profile?fields=greeting,get_started,persistent_menu&access_token=ACCESS_TOKEN
 
 Set settings:
 POST
@@ -42,6 +42,6 @@ POST
 //get_started
 {
   "get_started":{
-    "payload":{"type": "get_stated"}
+    "payload":"{\"type\": \"get_stated\"}"
   }
 }

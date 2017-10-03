@@ -473,11 +473,12 @@ function callSendAPI(messageData, cb) {
 });*/
 
 if (process.env.MODE && process.env.MODE.toLowerCase() == 'dev') {
-    console.log('running in dev mode');
+    winston.log('info', 'running in dev mode');
 } else {
     winston.add(winston.transports.File, {
         filename: 'log.log',
         timestamp: true,
+        level: 'info'
     });
 
     winston.handleExceptions(new winston.transports.File({
