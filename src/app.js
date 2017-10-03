@@ -78,8 +78,6 @@ app.post('/webhook', function(req, res) {
                         winston.log('info', "received message", event);
                         receivedMessage(event);
                     } else if (event.postback) {
-                        //receivedPostback(event);
-                        winston.log('info', "received postback", event);
                         handlePostBack(event.postback, event.sender.id, res);
                     } else if (event.read) {
                         winston.log('info', "received read event");
@@ -124,10 +122,11 @@ function handlePostBack(postback, user_id, res) {
             saveImageResponse(payload);
         break;
         case 'get_started':
-            sendTextMessage(user_id, 'Welcome.:)')
+            sendTextMessage(user_id, 'Welcome.:)');
         break;
         default:
             winston.log('warn', 'unhandled postback type. This is the postback: ', postback);
+        break;
     }
 
 
@@ -243,6 +242,7 @@ function receivedMessage(event) {
 
                 //Search art by keyword or get tags from sentence
             default:
+                sendSenderAction(senderID);
                 //If question get image by description, artist or tag
                 if (messageText.indexOf('?') !== -1) {
                     var n = messageText.split(" ");
@@ -331,7 +331,29 @@ function sendImageMessage(recipientId, image_data) {
                 payload: {
                     url: image_data.image_url
                 }
+            },
+            quick_replies:[
+              {
+                content_type:"text",
+                title:"Nice! 😍",
+                payload: JSON.stringify({
+                    type: 'image_reaction',
+                    art_id: image_data.id,
+                    reaction: 1,
+                    user_id: recipientId
+                })
+            },
+            {
+                content_type: 'text',
+                title: 'Nah... 😒',
+                payload: JSON.stringify({
+                    type: 'image_reaction',
+                    art_id: image_data.id,
+                    reaction: 0,
+                    user_id: recipientId
+                })
             }
+            ]
         }
     };
 
@@ -354,7 +376,7 @@ function sendRespondButtons(recipientId, image_title, art_id) {
                     template_type: "generic",
                     elements: [{
                         title: image_title,
-                        subtitle: 'Do you like it?',
+                /*        subtitle: 'Do you like it?',
                         //image_url: image_data.image_url,
                         //item_url: image_data.image_url,
                         buttons: [{
@@ -375,6 +397,8 @@ function sendRespondButtons(recipientId, image_title, art_id) {
                                 reaction: 0,
                                 user_id: recipientId
                             }),
+                        },*/{
+                          type:"element_share"
                         }],
                     }],
                 }
@@ -430,6 +454,17 @@ function sendUnsubscribeReasonButton(recipientId, art_id) {
         }
     };
     callSendAPI(messageData);
+}
+
+//type can be typing_on, typing_off, mark_seen
+function sendSenderAction(recipientId, type){
+    var action = type || 'typing_on';
+    callSendAPI({
+      "recipient":{
+        "id":recipientId
+      },
+      "sender_action":action
+    });
 }
 
 function callSendAPI(messageData, cb) {
