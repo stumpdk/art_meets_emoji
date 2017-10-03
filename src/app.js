@@ -126,7 +126,7 @@ function handlePostBack(postback, user_id, res) {
             sendTextMessage(user_id, 'Welcome.:)')
         break;
         default:
-            winston.log('warn', 'unhandled postback type. This is the payload: ' + payload);
+            winston.log('warn', 'unhandled postback type. This is the payload: ', payload);
     }
 
 
