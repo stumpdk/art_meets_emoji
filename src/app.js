@@ -338,7 +338,7 @@ function sendImageMessage(recipientId, image_data) {
 
     function sendButtons() {
         sendRespondButtons(recipientId, image_data.title, image_data.id);
-    };
+    }
 }
 
 function sendRespondButtons(recipientId, image_title, art_id) {
@@ -360,7 +360,7 @@ function sendRespondButtons(recipientId, image_title, art_id) {
                             type: "postback",
                             title: "Nice! 😍",
                             payload: JSON.stringify({
-                                type: 'reaction',
+                                type: 'image_reaction',
                                 art_id: art_id,
                                 reaction: 1,
                                 user_id: recipientId
@@ -369,7 +369,7 @@ function sendRespondButtons(recipientId, image_title, art_id) {
                             type: "postback",
                             title: "Nah... 😒",
                             payload: JSON.stringify({
-                                type: 'reaction',
+                                type: 'image_reaction',
                                 art_id: art_id,
                                 reaction: 0,
                                 user_id: recipientId
