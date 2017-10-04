@@ -5,8 +5,8 @@ Based on open data from SMK, the Danish National Gallery.
 
 The original data (in CSV format) can no longer be found here: http://demoapi.smk.dk/SMK.csv
 
-## Production
-This repository is a backend that receives and sends messages to Facebook users using the Facebook Messenger API.
+## Usage
+This repository is a backend that receives messages from and sends messages to Facebook users using the Facebook Messenger API.
 
 To make it operational fill out the .env file with your info.
 
