@@ -13,6 +13,12 @@ To make it operational fill out the .env file with your info.
 To simply test the functionality you can run `docker-compose up`, which will create a running node instance as well as a database with the basic data structure and artwork data.
 
 
+If you want to interact with Facebook users you also have to setup a Facebook app that uses the Messenger API.
+
+To get requests from Facebook directly to your local machine, I suggest you use the NGROK tool (https://ngrok.com/).
+
+This tool will tunnel requests from a ngrok-url to your localhost. Nice!
+
 ## Development
 ### Init
 Run `npm install`
