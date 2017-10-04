@@ -12,27 +12,26 @@ var pool = mysql.createPool({
 module.exports = function(winston) {
     var module = {};
 
-    module.changeSubscription = function(userId, cb){
+    module.changeSubscription = function(userId, cb) {
         var query = 'select enabled from user where user_id = ?';
         pool.query({
-            sql : query,
-            values : [userId]
+            sql: query,
+            values: [userId]
         }, handleResult);
 
-        function handleResult(error, results, fields){
+        function handleResult(error, results, fields) {
             //No results, add user
-            if(!results || results[0].enabled == 0){
+            if (!results || results[0].enabled == 0) {
                 subscribeUser(userId, cb);
-            }
-            else{
-                if(results[0].enabled == 1){
+            } else {
+                if (results[0].enabled == 1) {
                     unsubscribeUser(userId, null, cb);
                 }
             }
         }
     };
 
-    module.getSubscriber = function(userId, cb){
+    module.getSubscriber = function(userId, cb) {
         pool.query({
             sql: 'select id, enabled from user where id = ?',
             values: [userId]
@@ -62,7 +61,7 @@ module.exports = function(winston) {
                 }, function(error, result, fields) {
                     if (error) throw error;
 
-                    if(cb){
+                    if (cb) {
                         cb();
                     }
                 });
@@ -75,7 +74,7 @@ module.exports = function(winston) {
                 }, function(error, result, fields) {
                     if (error) throw error;
 
-                    if(cb){
+                    if (cb) {
                         cb();
                     }
                 });
@@ -100,14 +99,14 @@ module.exports = function(winston) {
             });
         },
 
-        module.getImageById = function(id, cb){
+        module.getImageById = function(id, cb) {
             winston.log('info', 'searching for image by id');
             pool.query({
                 sql: 'select art.id,art.title,art.image_url,DATE_FORMAT(art.creation_date, "%Y") as creation_date, author.name from art LEFT JOIN art_author ON art.id = art_author.art_id LEFT JOIN author ON art_author.author_id = author.id where art.id = ?',
                 values: [id]
             }, function(error, result, fields) {
                 if (error) throw error;
-                if(!result || !result[0]){
+                if (!result || !result[0]) {
                     cb([]);
                 }
                 cb([result[0]]);
@@ -154,7 +153,7 @@ module.exports = function(winston) {
                 winston.log('info', 'Results from the text search: ', results.length);
                 var randomId = Math.floor(Math.random() * results.length - 1) + 1;
 
-                if(!results || !results[randomId]){
+                if (!results || !results[randomId]) {
                     cb();
                     return;
                 }

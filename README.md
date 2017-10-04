@@ -1,13 +1,17 @@
 # SMK Chatbot
-Hack4DK project to display images via smk-api, NPL? and Node.js
+Hack4DK project to display paintings and other works of art.
 
-##Docker up
+Based on open data from SMK, the Danish National Gallery.
+
+The original data (in CSV format) can no longer be found here: http://demoapi.smk.dk/SMK.csv
+
+## Docker up
 run docker-compose up
 
-##Database init
+## Database init
 Put your .sql files in /db_init to fill in data in MySQL at startup time
 
-##startup
+## Startup
 Run `docker-compose up`
 
 Run `node server.js`
@@ -63,5 +67,5 @@ Run `grunt`
 				}]
 		}
 	]
-} 
+}
 `

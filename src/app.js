@@ -67,24 +67,24 @@ app.post('/webhook', function(req, res) {
             var pageID = entry.id;
             var timeOfEvent = entry.time;
 
-                // Iterate over each messaging event
-                entry.messaging.forEach(function(event) {
-                    if (event.message) {
-                        if(event.message.quick_reply && event.message.quick_reply.payload){
-                            handlePayload(event.message.quick_reply.payload, event.sender.id, res);
-                            return;
-                        }
-                        winston.log('info', "received message", event);
-                        sendSenderAction(event.sender.id);
-                        receivedMessage(event);
-                    } else if (event.postback) {
-                        handlePayload(event.postback.payload, event.sender.id, res);
-                    } else if (event.read) {
-                        winston.log('info', "received read event");
-                    } else {
-                        winston.log('info', "Webhook received unknown event: ", event);
+            // Iterate over each messaging event
+            entry.messaging.forEach(function(event) {
+                if (event.message) {
+                    if (event.message.quick_reply && event.message.quick_reply.payload) {
+                        handlePayload(event.message.quick_reply.payload, event.sender.id, res);
+                        return;
                     }
-                });
+                    winston.log('info', "received message", event);
+                    sendSenderAction(event.sender.id);
+                    receivedMessage(event);
+                } else if (event.postback) {
+                    handlePayload(event.postback.payload, event.sender.id, res);
+                } else if (event.read) {
+                    winston.log('info', "received read event");
+                } else {
+                    winston.log('info', "Webhook received unknown event: ", event);
+                }
+            });
         });
 
         // Assume all went well.
@@ -99,7 +99,7 @@ app.post('/webhook', function(req, res) {
 });
 
 function handlePayload(payload, user_id, res) {
-    winston.log('info','postback received',payload);
+    winston.log('info', 'postback received', payload);
     payload = JSON.parse(payload);
 
     //Postback actions:
@@ -108,72 +108,72 @@ function handlePayload(payload, user_id, res) {
     //unsubscribe_reason (payload.type*, payload.reason*, payload.art_id*)
     //image_reaction (payload.type*,payload.art_id*, payload.reaction*)
 
-    switch(payload.type){
+    switch (payload.type) {
         case 'subscribe':
             subscribe(user_id);
-        break;
+            break;
         case 'unsubscribe':
             unsubscribe(user_id);
-        break;
+            break;
         case 'get_subscription_status':
             get_subscription_status(user_id);
-        break;
+            break;
         case 'unsubscribe_reason':
             unsubscribeReason(payload);
-        break;
+            break;
         case 'image_reaction':
             sendSenderAction(user_id);
             saveImageResponse(payload);
-        break;
+            break;
         case 'image_nav_continue':
             sendSenderAction(user_id);
             getAssetsByText(user_id, payload.search_term);
-        break;
+            break;
         case 'get_image_info':
             sendSenderAction(user_id);
             getAssetInfoById(user_id, payload.art_id, payload);
-        break;
+            break;
         case 'get_started':
             sendSenderAction(user_id);
             sendTextMessage(user_id, 'Welcome to Art meets Emoji.:) \n\nYou can subscribe to a daily painting by using the "Subcription" button in the menu. \n\nYou can get a random painting by writing "image". \n\nAnd you can search for paintings by keyword by writing "keyword?". Enjoy! :)');
-        break;
+            break;
         default:
             winston.log('warn', 'unhandled postback type. This is the payload: ', payload);
-        break;
+            break;
     }
 
-    function subscribe(userId){
-        db.subscribeUser(userId, function(){
+    function subscribe(userId) {
+        db.subscribeUser(userId, function() {
             sendTextMessage(userId, 'You\'re now subscribed. We look forward to sent you paintings. :)');
         });
     }
 
-    function unsubscribe(payload){
+    function unsubscribe(payload) {
         winston.log('info', 'unsubscribe for user ' + user_id);
         var reason = null;
         db.unsubscribeUser(user_id, reason, function sendStatus() {
             sendUnsubscribeReasonButton(user_id);
         });
     }
-    function get_subscription_status(userId){
-        db.getSubscriber(userId, function(results){
-            if(results && results[0].enabled){
+
+    function get_subscription_status(userId) {
+        db.getSubscriber(userId, function(results) {
+            if (results && results[0].enabled) {
                 sendUnsubscribeButton(userId);
-            }
-            else{
+            } else {
                 sendSubscribeButton(userId);
             }
         });
     }
 
-    function unsubscribeReason(payload){
-        var reason =  payload.reason;
+    function unsubscribeReason(payload) {
+        var reason = payload.reason;
         db.unsubscribeUser(user_id, reason, function sendStatus() {
             sendTextMessage(payload.user_id, 'Okay. Got it. Hopefully we\'ll see you again. :)');
         });
     }
 
-    function saveImageResponse(payload){
+    function saveImageResponse(payload) {
         db.saveResponse(payload.art_id, user_id, payload.reaction, respondOnPostback);
 
         function respondOnPostback() {
@@ -256,7 +256,7 @@ function receivedMessage(event) {
                 break;
 
                 //Reponse on unsubscription
-        /*    case 'it\'s too often.':
+                /*    case 'it\'s too often.':
             case 'paintings are ugly':
             case 'i was just curious':
                 winston.log('info', 'Got subscription feedback.');
@@ -288,14 +288,13 @@ function receivedMessage(event) {
     }
 }
 
-function getAssetInfoById(recipientId, id, payload){
+function getAssetInfoById(recipientId, id, payload) {
     db.getImageById(id, sendInfo);
 
-    function sendInfo(result){
-        if(result && result[0]){
+    function sendInfo(result) {
+        if (result && result[0]) {
             sendImageNavButtons(recipientId, result.id, payload.search_term, 'Here\'s some extra info: ' + result[0].name + ': ' + result[0].title + ', ' + result[0].creation_date + '\nDo you want to get the next painting?');
-        }
-        else{
+        } else {
             sendImageNavButtons(recipientId, result.id, payload.search_term, 'Sorry, couldn\'t find any info on the painting. Do you want another one?');
         }
     }
@@ -318,7 +317,7 @@ function getAssetsByText(recipientId, text) {
             db.searchImagesByText(recipientId, text, sendImageOrNoResultsText);
             return;
         }
-        winston.log('info','here is the result: ', result.id, result.title);
+        winston.log('info', 'here is the result: ', result.id, result.title);
 
         sendImageOrNoResultsText(result, text);
     }
@@ -364,43 +363,42 @@ function sendImageMessage(recipientId, image_data, searchTerm) {
                     url: image_data.image_url
                 }
             },
-            quick_replies:[
-              {
-                content_type:"text",
-                title:"Nice! 😍",
-                payload: JSON.stringify({
-                    type: 'image_reaction',
-                    art_id: image_data.id,
-                    reaction: 1,
-                    user_id: recipientId,
-                    search_term: searchTerm
-                })
-            },
-            {
-                content_type: 'text',
-                title: 'Nah... 😒',
-                payload: JSON.stringify({
-                    type: 'image_reaction',
-                    art_id: image_data.id,
-                    reaction: 0,
-                    user_id: recipientId,
-                    search_term: searchTerm
-                })
-            },{
-                content_type: 'text',
-                title: 'Info?',
-                payload: JSON.stringify({
-                    type: 'get_image_info',
-                    art_id: image_data.id,
-                    user_id: recipientId,
-                    search_term: searchTerm
-                })
-            }
-        ]
+            quick_replies: [{
+                    content_type: "text",
+                    title: "Nice! 😍",
+                    payload: JSON.stringify({
+                        type: 'image_reaction',
+                        art_id: image_data.id,
+                        reaction: 1,
+                        user_id: recipientId,
+                        search_term: searchTerm
+                    })
+                },
+                {
+                    content_type: 'text',
+                    title: 'Nah... 😒',
+                    payload: JSON.stringify({
+                        type: 'image_reaction',
+                        art_id: image_data.id,
+                        reaction: 0,
+                        user_id: recipientId,
+                        search_term: searchTerm
+                    })
+                }, {
+                    content_type: 'text',
+                    title: 'Info?',
+                    payload: JSON.stringify({
+                        type: 'get_image_info',
+                        art_id: image_data.id,
+                        user_id: recipientId,
+                        search_term: searchTerm
+                    })
+                }
+            ]
         }
     };
-callSendAPI(messageData);
-db.insertSeenArt(recipientId, image_data.id);
+    callSendAPI(messageData);
+    db.insertSeenArt(recipientId, image_data.id);
 
     //callSendAPI(messageData, sendButtons);
 
@@ -442,8 +440,8 @@ function sendRespondButtons(recipientId, image_title, art_id) {
                                 reaction: 0,
                                 user_id: recipientId
                             }),
-                        },{
-                          type:"element_share"
+                        }, {
+                            type: "element_share"
                         }],
                     }],
                 }
@@ -460,126 +458,125 @@ function sendImageNavButtons(recipientId, art_id, searchTerm, text) {
         },
         message: {
             text: text,
-            quick_replies:[
-              {
-                content_type:"text",
-                title:"Sure. :)",
-                payload: JSON.stringify({
-                    type: 'image_nav_continue',
-                    art_id: art_id,
-                    search_term: searchTerm,
-                    user_id: recipientId
-                })
-            },
-            {
-                content_type: 'text',
-                title: 'Nope..',
-                payload: JSON.stringify({
-                    //Unhandled
-                    type: 'image_nav_stop',
-                    art_id: art_id,
-                    search_term: searchTerm,
-                    user_id: recipientId
-                })
-            }
-        ]
+            quick_replies: [{
+                    content_type: "text",
+                    title: "Sure. :)",
+                    payload: JSON.stringify({
+                        type: 'image_nav_continue',
+                        art_id: art_id,
+                        search_term: searchTerm,
+                        user_id: recipientId
+                    })
+                },
+                {
+                    content_type: 'text',
+                    title: 'Nope..',
+                    payload: JSON.stringify({
+                        //Unhandled
+                        type: 'image_nav_stop',
+                        art_id: art_id,
+                        search_term: searchTerm,
+                        user_id: recipientId
+                    })
+                }
+            ]
         }
     };
     callSendAPI(messageData);
 }
 
-function sendSubscribeButton(recipientId){
+function sendSubscribeButton(recipientId) {
     var messageData = {
         recipient: {
             id: recipientId
-        },/*
+        },
+        /*
+                message: {
+                    attachment: {
+                        type: "template",
+                        payload: {
+                            template_type: "generic",
+                            elements: [{
+                                title: "You're currently not subscribing to daily paintings. Would you?",
+                                buttons: [{
+                                    type: "postback",
+                                    title: "Sure! :)",
+                                    payload: JSON.stringify({
+                                        type: 'subscribe',
+                                        user_id: recipientId
+                                    }),
+                                }],
+                            }],
+                        }
+                    }
+                },*/
         message: {
-            attachment: {
-                type: "template",
-                payload: {
-                    template_type: "generic",
-                    elements: [{
-                        title: "You're currently not subscribing to daily paintings. Would you?",
-                        buttons: [{
-                            type: "postback",
-                            title: "Sure! :)",
-                            payload: JSON.stringify({
-                                type: 'subscribe',
-                                user_id: recipientId
-                            }),
-                        }],
-                    }],
-                }
-            }
-        },*/
-        message:{
             text: "You're currently not subscribing to daily paintings. Would you like to?",
-            quick_replies:[
-              {
-                content_type:"text",
-                title: "Sure! :)",
-                payload: JSON.stringify({
-                    type: 'subscribe',
-                    user_id: recipientId
-                }),
-            },
-            {
-              content_type:"text",
-              title: "No thanks... ",
-              payload: JSON.stringify({
-                  //Unhandled
-                  type: 'subscribe_no_thanks',
-                  user_id: recipientId
-              })
-            }
+            quick_replies: [{
+                    content_type: "text",
+                    title: "Sure! :)",
+                    payload: JSON.stringify({
+                        type: 'subscribe',
+                        user_id: recipientId
+                    }),
+                },
+                {
+                    content_type: "text",
+                    title: "No thanks... ",
+                    payload: JSON.stringify({
+                        //Unhandled
+                        type: 'subscribe_no_thanks',
+                        user_id: recipientId
+                    })
+                }
             ]
-          }
+        }
     };
     callSendAPI(messageData);
 }
 
-function sendUnsubscribeButton(recipientId){
+function sendUnsubscribeButton(recipientId) {
     var messageData = {
         recipient: {
             id: recipientId
-        },/*
+        },
+        /*
+                message: {
+                    attachment: {
+                        type: "template",
+                        payload: {
+                            template_type: "generic",
+                            elements: [{
+                                title: "You're currently getting a painting once a day. Unsubscribe?",
+                                buttons: [{
+                                    type: "postback",
+                                    title: "Unsubscribe",
+                                    payload: JSON.stringify({
+                                        type: 'unsubscribe',
+                                        user_id: recipientId
+                                    }),
+                                }],
+                            }],
+                        }
+                    }
+                },*/
         message: {
-            attachment: {
-                type: "template",
-                payload: {
-                    template_type: "generic",
-                    elements: [{
-                        title: "You're currently getting a painting once a day. Unsubscribe?",
-                        buttons: [{
-                            type: "postback",
-                            title: "Unsubscribe",
-                            payload: JSON.stringify({
-                                type: 'unsubscribe',
-                                user_id: recipientId
-                            }),
-                        }],
-                    }],
-                }
-            }
-        },*/
-        message:{
             text: "You're subscribing to one daily painting. Would you like to unsubscribe?",
-            quick_replies:[
-              {
-                content_type:"text",
-                title: "Yes, please...",
-                payload: JSON.stringify({
-                    type: 'unsubscribe',
-                    user_id: recipientId
-                }),
-            },
-            {
-              content_type:"text",
-              title: "Nope..",
-              payload: JSON.stringify({}),
-            }
+            quick_replies: [{
+                    content_type: "text",
+                    title: "Yes, please...",
+                    payload: JSON.stringify({
+                        type: 'unsubscribe',
+                        user_id: recipientId
+                    }),
+                },
+                {
+                    content_type: "text",
+                    title: "Nope..",
+                    payload: JSON.stringify({}),
+                }
             ]
-          }
+        }
     };
 
     callSendAPI(messageData);
@@ -631,13 +628,13 @@ function sendUnsubscribeReasonButton(recipientId) {
 }
 
 //type can be typing_on, typing_off, mark_seen
-function sendSenderAction(recipientId, type){
+function sendSenderAction(recipientId, type) {
     var action = type || 'typing_on';
     callSendAPI({
-      "recipient":{
-        "id":recipientId
-      },
-      "sender_action":action
+        "recipient": {
+            "id": recipientId
+        },
+        "sender_action": action
     });
 }
 
@@ -678,13 +675,13 @@ function callSendAPI(messageData, cb) {
 }
 
 //Send images to recipients every day at 15 o'clock
-var j = schedule.scheduleJob('0 15 * * *', function(){
-  winston.log('info', 'Sending messages for recipients now!');
-  var recipients = [1826099614071392];
+var j = schedule.scheduleJob('0 15 * * *', function() {
+    winston.log('info', 'Sending messages for recipients now!');
+    var recipients = [1826099614071392];
 
-  recipients.forEach(function(item, index){
-      getAssetsByText(item);
-  });
+    recipients.forEach(function(item, index) {
+        getAssetsByText(item);
+    });
 });
 
 if (process.env.LOG && process.env.LOG == 'CONSOLE') {
@@ -709,5 +706,5 @@ if (process.env.LOG && process.env.LOG == 'CONSOLE') {
 
 // Set Express to listen out for HTTP requests
 var server = app.listen(process.env.PORT || 3000, function() {
-    winston.log('info',"Listening on port %s", server.address().port);
+    winston.log('info', "Listening on port %s", server.address().port);
 });
