@@ -1,4 +1,4 @@
-# SMK Chatbot
+# Art meets Emoji
 Hack4DK project to display paintings and other works of art.
 
 Based on open data from SMK, the Danish National Gallery.
