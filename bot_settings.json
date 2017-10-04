@@ -1,13 +1,20 @@
 Check settings:
 GET https://graph.facebook.com/v2.6/me/messenger_profile?fields=greeting,get_started,persistent_menu&access_token=ACCESS_TOKEN
 
+Delete persistent_menu:
+https://graph.facebook.com/v2.6/me/thread_settings?access_token=EAABvBIctgvQBAIkz7QbduWmSuhaz5rv9SelkP3JssVjYXsZBsey1ZBvBZCLN9hreqswZBdn55sWEdIzD67KWMKY2AGi6jyDZCo37CAg8i7zd49VSteKej6b5ZCxq0VCeIjdwEYMypdOmdzUBwARHysZB4xZAF7OKZBGBbUVjlzZBbetwZDZD
+{
+  "setting_type":"call_to_actions",
+  "thread_state":"existing_thread"
+}
+
 Set settings:
 POST
 
 //thread_settings
 {
   "setting_type" : "call_to_actions",
-  "thread_state" : "new_thread",
+  "thread_state" : "NEW_THREAD",
   "call_to_actions":[
     {
       "type":"POSTBACK",
@@ -19,18 +26,18 @@ POST
 
 {
   "setting_type" : "call_to_actions",
-  "thread_state" : "existing_thread",
+  "thread_state" : "EXISTING_THREAD",
   "call_to_actions":[
       {
         "type":"POSTBACK",
-        "title":"Unsubscribe",
-        "payload":"{\"type\": \"unsubscribe\"}"
+        "title":"Subscription",
+        "payload":"change_subscription"
       }
   ]
 }
 
 
-/messenger_profile
+https://graph.facebook.com/v2.6/me/messenger_profile?access_token=
 {"greeting":[
   {
     "locale":"default",
@@ -40,6 +47,7 @@ POST
 }
 
 //get_started
+https://graph.facebook.com/v2.6/me/messenger_profile?access_token=
 {
   "get_started":{
     "payload":"{\"type\": \"get_stated\"}"

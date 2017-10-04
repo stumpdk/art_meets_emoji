@@ -12,46 +12,74 @@ var pool = mysql.createPool({
 module.exports = function(winston) {
     var module = {};
 
+    module.changeSubscription = function(userId, cb){
+        var query = 'select enabled from user where user_id = ?';
+        pool.query({
+            sql : query,
+            values : [userId]
+        }, handleResult);
+
+        function handleResult(error, results, fields){
+            //No results, add user
+            if(!results || results[0].enabled == 0){
+                subscribeUser(userId, cb);
+            }
+            else{
+                if(results[0].enabled == 1){
+                    unsubscribeUser(userId, null, cb);
+                }
+            }
+        }
+    };
+
+    module.getSubscriber = function(userId, cb){
+        pool.query({
+            sql: 'select id, enabled from user where id = ?',
+            values: [userId]
+        }, function(error, results, fields) {
+            if (error) throw error;
+
+            cb(results);
+        });
+    };
+
     module.subscribeUser = function(userId, cb) {
 
-            getSubscriber(userId, createOrUpdateExistingSubscription);
+            this.getSubscriber(userId, createOrUpdateExistingSubscription);
 
-            function getSubscriber(userId, cb) {
-                pool.query({
-                    sql: 'select id, enabled from user where id = ?',
-                    values: [userId]
-                }, function(error, results, fields) {
-                    if (error) throw error;
-
-                    cb(error, results, fields);
-                });
-            };
-
-            function createOrUpdateExistingSubscription(error, results, fields) {
-                if (results.length == 1) {
+            function createOrUpdateExistingSubscription(results) {
+                if (results && results.length == 1) {
                     updateSubscriber(userId, 1, cb);
                 } else {
                     addNewSubscriber(userId, cb);
                 }
-            };
+            }
 
             function updateSubscriber(userId, status, cb) {
                 pool.query({
-                    sql: 'update user set enabled = ?, subscription_date = NOW() WHERE id = ?',
+                    sql: 'update user set enabled = ?, reason = null, subscription_date = NOW() WHERE id = ?',
                     values: [status, userId]
                 }, function(error, result, fields) {
                     if (error) throw error;
+
+                    if(cb){
+                        cb();
+                    }
                 });
             };
 
-            function addNewSubscriber(userId) {
+            function addNewSubscriber(userId, cb) {
                 pool.query({
                     sql: 'insert into user (id, enabled, subscription_date) VALUES (?, 1, NOW())',
                     values: [userId]
                 }, function(error, result, fields) {
                     if (error) throw error;
+
+                    if(cb){
+                        cb();
+                    }
                 });
-            };
+            }
         },
 
         module.unsubscribeUser = function(userId, reason, cb) {
@@ -72,10 +100,24 @@ module.exports = function(winston) {
             });
         },
 
+        module.getImageById = function(id, cb){
+            winston.log('info', 'searching for image by id');
+            pool.query({
+                sql: 'select art.id,art.title,art.image_url,DATE_FORMAT(art.creation_date, "%Y") as creation_date, author.name from art LEFT JOIN art_author ON art.id = art_author.art_id LEFT JOIN author ON art_author.author_id = author.id where art.id = ?',
+                values: [id]
+            }, function(error, result, fields) {
+                if (error) throw error;
+                if(!result || !result[0]){
+                    cb([]);
+                }
+                cb([result[0]]);
+            });
+        },
+
         module.getImage = function(userId, cb) {
             winston.log('info', 'searching for images');
             pool.query({
-                sql: 'select art.id,art.title,art.image_url,art.creation_date from art limit 5000',
+                sql: 'select art.id,art.title,art.image_url,art.creation_date from art limit 500',
             }, function(error, result, fields) {
                 if (error) throw error;
 
@@ -87,6 +129,7 @@ module.exports = function(winston) {
 
         module.searchImagesByText = function(userId, text, cb) {
             winston.log('info', 'search art for keyword: ', text);
+            var orgText = text;
             text = "%" + text + "%"
             var query = 'SELECT DISTINCT art.id,art.title,art.image_url,art.creation_date,group_concat(author.name) as author,type.name as type FROM art ' +
                 ' JOIN art_author ON art.id = art_author.art_id ' +
@@ -115,12 +158,12 @@ module.exports = function(winston) {
                     cb();
                     return;
                 }
-                cb(results[randomId]);
+                cb(results[randomId], orgText);
             });
         },
 
         module.insertSeenArt = function(userId, artId) {
-            console.log('seen art', userId, artId);
+            winston.log('info', 'seen art', userId, artId);
             pool.query({
                 sql: 'INSERT INTO seen_art (user_id, art_id) VALUES (?,?)',
                 values: [userId, artId]
