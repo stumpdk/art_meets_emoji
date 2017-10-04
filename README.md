@@ -5,33 +5,35 @@ Based on open data from SMK, the Danish National Gallery.
 
 The original data (in CSV format) can no longer be found here: http://demoapi.smk.dk/SMK.csv
 
+## Production
 This repository is a backend that receives and sends messages to Facebook users using the Facebook Messenger API.
 
-To make it operational fill out a .env file.
+To make it operational fill out the .env file with your info.
+
+To simply test the functionality you can run `docker-compose up`, which will create a running node instance as well as a database with the basic data structure and artwork data.
 
 
-## Docker up
-run docker-compose up
+## Development
+### Init
+Run `npm install`
 
-## Database init
-Put your .sql files in /db_init to fill in data in MySQL at startup time
+### Database data
+Put any .sql file in /db_init, and they will be executed at MySQL start
 
-## Startup
-Run `docker-compose up`
+### Beautify files
+Run `grunt beautify` for single beautification or `grunt` to watch for changes
 
+### With existing database: Start node
 Run `node server.js`
 
 Access the webserver on http://localhost:3000
 
-Access the database on localhost:3306 user: user, password: password
+### Without existing database: Run database and Node.js with Docker Compose
+Run `docker-compose up`
 
-## Init
-Run `npm install`
+Access the database on localhost:3306
 
-## Beautify files
-Run `grunt`
-
-## Test call, message
+### Test call, message
 `
 {
 	"object":"page",
@@ -48,7 +50,7 @@ Run `grunt`
 }
 `
 
-## Test call, postback
+### Test call, postback
 `
 {
 	"object":"page",
