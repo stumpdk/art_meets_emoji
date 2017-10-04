@@ -5,6 +5,11 @@ Based on open data from SMK, the Danish National Gallery.
 
 The original data (in CSV format) can no longer be found here: http://demoapi.smk.dk/SMK.csv
 
+This repository is a backend that receives and sends messages to Facebook users using the Facebook Messenger API.
+
+To make it operational fill out a .env file.
+
+
 ## Docker up
 run docker-compose up
 

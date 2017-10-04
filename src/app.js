@@ -684,13 +684,13 @@ var j = schedule.scheduleJob('0 15 * * *', function() {
     });
 });
 
-if (process.env.LOG && process.env.LOG == 'CONSOLE') {
+if (process.env.LOG && process.env.LOG == 'console') {
     winston.log('info', 'console logging enabled');
 } else {
     winston.add(winston.transports.File, {
         filename: 'log.log',
         timestamp: true,
-        level: 'info'
+        level: 'warn'
     });
 
     winston.handleExceptions(new winston.transports.File({
