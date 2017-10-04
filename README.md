@@ -19,6 +19,8 @@ To get requests from Facebook directly to your local machine, I suggest you use 
 
 This tool will tunnel requests from a ngrok-url to your localhost. Nice!
 
+You can setup the Facebook Messenger settings using the API calls in bot_settings.json.
+
 ## Development
 ### Init
 Run `npm install`
