@@ -677,7 +677,8 @@ function callSendAPI(messageData, cb) {
 //Send images to recipients every day at 15 o'clock
 var j = schedule.scheduleJob('0 15 * * *', function() {
     winston.log('info', 'Sending messages for recipients now!');
-    var recipients = [1826099614071392];
+    //Bo, Caroline
+    var recipients = [1826099614071392, 2067350629958019];
 
     recipients.forEach(function(item, index) {
         getAssetsByText(item);
