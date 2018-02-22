@@ -1,0 +1,21 @@
+CREATE TABLE `new_import` (
+  `medium_image_url` char(250) DEFAULT NULL,
+  `id` char(150) DEFAULT NULL,
+  `artist_auth` char(250) DEFAULT NULL,
+  `artist_name` char(250) DEFAULT NULL,
+  `artist_name_text` char(250) DEFAULT NULL,
+  `artist_natio_dk` char(250) DEFAULT NULL,
+  `category` char(250) DEFAULT NULL,
+  `comments` text,
+  `content_notes` text,
+  `description_note_dk` text,
+  `materiale_type` text,
+  `materiale_type_eng` text,
+  `multi_work_ref` text,
+  `note_elementer` text,
+  `proveniens` text,
+  `related_id` text,
+  `title_all` text,
+  `title_dk` text,
+  `title_eng` text
+) ENGINE=InnoDB DEFAULT CHARSET=UTF-8;
