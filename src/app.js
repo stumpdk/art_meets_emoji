@@ -689,7 +689,7 @@ if (process.env.LOG && process.env.LOG == 'console') {
     winston.log('info', 'console logging enabled');
 } else {
     winston.add(winston.transports.File, {
-        filename: 'log.log',
+        filename: '/var/log/nodejs/log.log',
         timestamp: true,
         level: 'warn'
     });
