@@ -186,48 +186,6 @@ function handlePayload(payload, user_id, res) {
     }
 }
 
-app.post('/subscribe', function(req, res) {
-    winston.log('info', db);
-    winston.log('info', 'subscribe endpoint reached');
-
-    var data = req.body;
-    //if(data.object === 'page'){
-    if (req.body['messenger user id']) {
-        winston.log('info', data.entry);
-        db.subscribeUser(req.body['messenger user id'])
-    } else {
-        winston.log('info', 'message user id not set!');
-    }
-    //    }
-    //    else{
-    //Didn't receive the right format
-    //        winston.log('info', 'subscribe data wasn\'t a page');
-    //    }
-
-    res.sendStatus(200);
-});
-
-app.post('/unsubscribe', function(req, res) {
-    winston.log('info', 'unsubscribe endpoint reached');
-
-    var data = req.body;
-    //if(data.object === 'page'){
-    if (req.body['messenger user id']) {
-        var reason = req.query.reason || false;
-        winston.log('info', data.entry);
-        db.unsubscribeUser(req.body['messenger user id'], reason, function sendStatus() {
-            res.sendStatus(200);
-        });
-    }
-    //    }
-    //    else{
-    //Didn't receive the right format
-    //    winston.log('info', 'unsubscribe data wasn\'t a page');
-    //    }
-
-
-
-});
 
 // Incoming events handling
 function receivedMessage(event) {
