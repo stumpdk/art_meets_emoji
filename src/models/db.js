@@ -150,11 +150,11 @@ module.exports = function(winston) {
                 var query = 'SELECT art.id,art.title_dk as title,art.medium_image_url as image_url,creation_dk as creation_date,artist_name_text as author,materiale_type as type FROM new_import2 as art ' +
                     ' LEFT OUTER JOIN seen_art ON seen_art.art_id = art.id' +
                     ' WHERE ' +
-                    ' (art.title LIKE ? OR' +
+                    ' (title LIKE ? OR' +
                     ' author LIKE ? OR' +
                     ' art.creation_date LIKE ? ' +
-                    ' AND (seen_art.user_id is null OR seen_art.user_id != ?)' +
-                    ' DESC LIMIT 100';
+                    ' AND (seen_art.user_id is null OR seen_art.user_id != ?))' +
+                    ' ORDER BY title DESC LIMIT 100';
 
             pool.query({
                 sql: query,
