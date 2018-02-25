@@ -130,6 +130,7 @@ module.exports = function(winston) {
             winston.log('info', 'search art for keyword: ', text);
             var orgText = text;
             text = "%" + text + "%"
+            /*
             var query = 'SELECT DISTINCT art.id,art.title,art.image_url,art.creation_date,group_concat(author.name) as author,type.name as type FROM art ' +
                 ' JOIN art_author ON art.id = art_author.art_id ' +
                 ' JOIN  author ON art_author.author_id = author.id' +
@@ -144,10 +145,20 @@ module.exports = function(winston) {
                 ' AND (seen_art.user_id is null OR seen_art.user_id != ?)' +
                 ' GROUP BY art.id' +
                 ' ORDER BY count(art.id) DESC LIMIT 100';
+                */
+
+                var query = 'SELECT art.id,art.title_dk as title,art.medium_image_url as image_url,creation_dk as creation_date,artist_name_text as author,materiale_type as type FROM new_import2 as art ' +
+                    ' LEFT OUTER JOIN seen_art ON seen_art.art_id = art.id' +
+                    ' WHERE ' +
+                    ' (art.title LIKE ? OR' +
+                    ' author LIKE ? OR' +
+                    ' art.creation_date LIKE ? ' +
+                    ' AND (seen_art.user_id is null OR seen_art.user_id != ?)' +
+                    ' DESC LIMIT 100';
 
             pool.query({
                 sql: query,
-                values: [text, text, text, text, userId]
+                values: [text, text, text, userId]
             }, function(error, results, fields) {
                 if (error) throw error;
                 winston.log('info', 'Results from the text search: ', results.length);

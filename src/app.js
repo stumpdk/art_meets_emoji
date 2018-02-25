@@ -135,7 +135,7 @@ function handlePayload(payload, user_id, res) {
             break;
         case 'get_started':
             sendSenderAction(user_id);
-            sendTextMessage(user_id, 'Welcome to Art meets Emoji.:) \n\nYou can subscribe to a daily painting by using the "Subcription" button in the menu. \n\nYou can get a random painting by writing "image". \n\nAnd you can search for paintings by keyword by writing "keyword?". Enjoy! :)');
+            sendTextMessage(user_id, 'Welcome to Art meets Emoji.:) \n\nYou can subscribe to a daily painting by using the "Subscription" button in the menu. \n\nYou can get a random painting by writing "image". \n\nAnd you can search for paintings by keyword by writing "keyword?". Enjoy! :)');
             break;
         default:
             winston.log('warn', 'unhandled postback type. This is the payload: ', payload);
@@ -284,7 +284,7 @@ function receivedMessage(event) {
     }
 
     function sendThankYouMessage() {
-        sendTextMessage(senderID, 'Thank you for your input, I can probaply use it for the image!');
+        sendTextMessage(senderID, 'Thank you for your input, we can probaply use it for the image!');
     }
 }
 
