@@ -2,7 +2,7 @@
   "name": "art_meets_emoji",
   "version": "1.0.0",
   "description": "Hack4DK project about given the cultural heritage back to the people",
-  "main": "index.js",
+  "main": "server.js",
   "dependencies": {
     "body-parser": "^1.18.1",
     "dotenv": "^4.0.0",
