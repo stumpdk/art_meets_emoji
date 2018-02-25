@@ -41,6 +41,10 @@ Run `docker-compose up`
 
 Access the database on localhost:3306
 
+### Endpoints
+* get	/webhook: Authorizing Facebook integration
+* POST 	/webhook: Handles all payloads
+
 ### Test call, message
 `
 {
