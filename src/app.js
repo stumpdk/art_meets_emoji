@@ -39,11 +39,6 @@ app.get('/webhook', function(req, res) {
     }
 });
 
-app.get('/syn', function(req, res) {
-    text.test2('this is a test string containing words like yellow, happy, angry and Copenhagen');
-    //winston.log('info', synonyms(req.query.query));
-    res.send(JSON.stringify(synonyms(req.query.query)));
-});
 // Display the web page
 app.get('/', function(req, res) {
     res.writeHead(200, {
