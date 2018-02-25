@@ -691,7 +691,7 @@ if (process.env.LOG && process.env.LOG == 'console') {
     winston.add(winston.transports.File, {
         filename: '/var/log/nodejs/log.log',
         timestamp: true,
-        level: 'warn'
+        level: 'info'
     });
 
     winston.handleExceptions(new winston.transports.File({
