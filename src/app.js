@@ -62,6 +62,9 @@ app.post('/webhook', function(req, res) {
             var pageID = entry.id;
             var timeOfEvent = entry.time;
 
+            if(!entry.messaging){
+                return;
+            }
             // Iterate over each messaging event
             entry.messaging.forEach(function(event) {
                 if (event.message) {
@@ -265,7 +268,7 @@ function getAssetsByText(recipientId, text) {
 
     function sendResultAsImageOrSearchByText(result) {
 
-        if (!result || !result.id) {
+        if (result == null || !result || result.length == 0 || !result.id) {
             winston.log('info', 'no result when searching for related images. Trying to search by text: ' + text);
             db.searchImagesByText(recipientId, text, sendImageOrNoResultsText);
             return;
@@ -276,6 +279,7 @@ function getAssetsByText(recipientId, text) {
     }
 
     function sendImageOrNoResultsText(result, text) {
+        winston.log('info', "oh no...");
         if (result) {
             winston.log('info', 'heres the result', result.id, result.title);
             sendImageMessage(recipientId, result, text);
@@ -304,7 +308,7 @@ function sendTextMessage(recipientId, messageText) {
 }
 
 function sendImageMessage(recipientId, image_data, searchTerm) {
-    winston.log('info', 'sending image');
+    console.log('info', 'sending image');
     var messageData = {
         recipient: {
             id: recipientId
@@ -616,7 +620,7 @@ function callSendAPI(messageData, cb) {
             winston.log('info', "Successfully sent generic message with id %s to recipient %s",
                 messageId, recipientId);
         } else {
-            winston.log('error', "Unable to send message.", response);
+            console.log('error', "Unable to send message.", response);
             //            winston.log('error', response);
             //            winston.log('error', error);
         }
@@ -641,6 +645,7 @@ var j = schedule.scheduleJob('0 15 * * *', function() {
 if (process.env.LOG && process.env.LOG == 'console') {
     winston.log('info', 'console logging enabled');
 } else {
+    winston.log('info', 'console logging enabled');
     winston.add(winston.transports.File, {
         filename: '/var/log/nodejs/log.log',
         timestamp: true,

@@ -37,7 +37,14 @@ module.exports = {
         }, function(error, results, fields) {
             if (error) throw error;
             console.log('Search favorites and related images by text found ' + results.length + ' results');
-            cb(results[0]);
+            if(results.length && results.length == 1){
+                console.log('returning', results[0]);
+                cb(results[0]);
+            }
+            else{
+                console.log('returning null');
+                cb(null);
+            }
         });
     },
 
