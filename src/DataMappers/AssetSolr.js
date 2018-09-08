@@ -69,3 +69,5 @@ class AssetSolrDataMapper{
         docs = [];
     }
 }
+
+module.exports = AssetSolrDataMapper;

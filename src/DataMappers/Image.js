@@ -49,3 +49,5 @@ class Image {
             .slice(0, limit);
     }
 }
+
+module.exports = Image;

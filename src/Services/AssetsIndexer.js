@@ -14,3 +14,5 @@ class AssetsIndexer {
         );
     }
 }
+
+module.exports = AssetsIndexer;

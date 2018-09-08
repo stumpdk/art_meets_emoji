@@ -94,3 +94,5 @@ class AssetDataMapper {
         return assets;
     }
 }
+
+module.exports = AssetDataMapper;
