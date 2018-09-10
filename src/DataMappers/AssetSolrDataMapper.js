@@ -1,5 +1,6 @@
 'use strict'
-var solr = require('solr-client');
+
+const solr = require('solr-client');
 
 /**
  * This class maps data from Asset objects to Solr

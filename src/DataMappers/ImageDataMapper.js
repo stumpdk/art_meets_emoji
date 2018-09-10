@@ -8,7 +8,7 @@ const http        = require('http');
  * This class extracts data from images using ImageMagick as its driver
  */
 
-class Image {
+class ImageDataMapper {
     constructor(imagemagick){
       this.imagemagick = imagemagick;
     }
