@@ -2,6 +2,7 @@
 
 const imagemagick = require('imagemagick');
 const fs          = require('fs');
+const http        = require('http');
 
 /**
  * This class extracts data from images using ImageMagick as its driver
@@ -12,13 +13,18 @@ class Image {
       this.imagemagick = imagemagick;
     }
 
-    getDataFromFile(file){
-        return fs.readFileSync(file);
+    getDataFromFile(fileUrl){
+        let imageData = fs.createWriteStream("file.jpg");
+        let request = http.get(fileUrl, function(response) {
+          response.pipe(imageData);
+        });
+
+        return imageData;
     }
 
     getReducedNumberOfColors(file, numOfColors){
-        var result = this.imagemagick.quantize({
-            srcData: fs.readFileSync(file),
+        let result = this.imagemagick.quantize({
+            srcData: this.getDataFromFile(file),
             colors: numOfColors,
             debug:  false,
             ignoreWarnings: false
@@ -29,8 +35,8 @@ class Image {
 
     getOftenOccuringColors(colorArray, limit){
         //Count colors
-        colorMap = new Map[];
-        for(var color of colorArray){
+        let colorMap = new Map();
+        for(let color of colorArray){
             if(colorMap.has(color.hex)){
                 colorMap.set(color.hex, colorMap.get(color.hex)+1);
             }

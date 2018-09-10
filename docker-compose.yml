@@ -20,3 +20,15 @@ services:
         MYSQL_DATABASE: art_meets_emoji
         MYSQL_USER: user
         MYSQL_PASSWORD: password
+  solr:
+    image: solr:7.4
+    ports:
+    - "8983:8983"
+    volumes:
+      - data:/opt/solr/server/solr/mycores
+    entrypoint:
+      - docker-entrypoint.sh
+      - solr-precreate
+      - assets
+volumes:
+  data:

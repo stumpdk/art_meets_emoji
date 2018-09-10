@@ -16,7 +16,7 @@ var messengerButton = "<html><head><title>Facebook Messenger Bot</title></head><
 
 
 
-const synonyms = require("synonyms");
+//const synonyms = require("synonyms");
 
 
 // The rest of the code implements the routes for our Express server.
