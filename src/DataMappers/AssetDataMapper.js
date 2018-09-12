@@ -5,10 +5,10 @@ const knex        = require('knex')({
   client: 'mysql2',
   version: '5.7',
   connection: {
-    host : process.env.DB_HOSTNAME,
-    user : process.env.DB_USERNAME,
-    password : process.env.DB_PASSWORD,
-    database : process.env.DB_DB_NAME
+    host :      process.env.DB_HOSTNAME,
+    user :      process.env.DB_USERNAME,
+    password :  process.env.DB_PASSWORD,
+    database :  process.env.DB_DB_NAME
   },
   pool: { min: 0, max: 7 }
 });
@@ -21,12 +21,12 @@ class AssetDataMapper {
     }
 
     getAssets(limit){
-      const queryLimit = limit || 500;
-      let response = this.knex('art')
+        const queryLimit = limit || 500;
+        let response = this.knex('art')
             .select('art.id','art.title','art.image_url','art.creation_date')
             .limit(queryLimit);
 
-       return response;
+        return response;
     }
 
     getAsset(id){
@@ -74,20 +74,27 @@ class AssetDataMapper {
     }
 
     getAssetsAndColors(){
-        this.getAssets().then(function(assets){
-          console.log(assets);
+      let that = this;
+      return new Promise(function(fullfill, reject){
+        that.getAssets()
+        .then(function(assets){
+          console.log('her',assets[0]);
+
           for(let asset of assets){
               //Get the 400 most occuring colors of images with a maximum of 8000 colors
-              asset.colors = this.imageDM.getOftenOccuringColors(
-                this.imageDM.getReducedNumberOfColors(asset.image_url, 8000),
-                400
-              );
+              that.imageDM.getFileFromUrl(asset.image_url)
+                .then(data => that.imageDM.getColorInfo(data, 6))
+                .catch(err => console.log('error getting colors',err))
+                .then(colors => asset.colors = colors)
+
+                break;
           }
-          return assets;
 
-        });
+          fullfill(assets);
 
-
+        })
+        .catch(err => console.log('could not get assets',err));
+      });
     }
 }
 

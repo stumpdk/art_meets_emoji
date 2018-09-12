@@ -8,7 +8,7 @@ const solr = require('solr-client');
 
 class AssetSolrDataMapper{
     constructor(){
-        this.solr = solr;
+        this.client = solr.createClient('solr',8983,'assets');
     }
 
     save(assets){
@@ -17,57 +17,63 @@ class AssetSolrDataMapper{
             docs.push({
                 id: asset.id,
                 url: asset.image_url,
-                colors: asset.colors,
+                colors: asset.prominentColors,
                 title: asset.title
             });
         }
-
+        console.log(docs);
         this._addToSolr(docs);
     }
 
     findByColors(colors){
-        var client = this.solr.createClient();
-
         //First approach: Use Solr's default ranking
-        query = {
-            q: colorsAsString,
+        let query = {
+            q: colors.join(" "),
             qf: "colors",
             defType: "edismax"
         };
 
         //Second approach: Use frequencies of colors and sort by it
-        colorsTf = "product(";
+        let colorsTf = "product(";
         for(var color of colors){
             colorsTf = colorsTf + "tf(color,\"" + color + "\"),"
         }
-        colorsTf = colorsTf.substring(0, colorsTf.length()-1);
+        colorsTf = colorsTf.substring(0, colorsTf.length-1);
         colorsTf = colorsTf + ") desc";
 
-        query2 = {
+        let query2 = {
             q: '*:*',
             sort: colorsTf
         }
+        console.log(query);
+        return new Promise((fullfill, reject) => {
+          this.client.search(query, function(err, obj){
+            if(err) {
+              console.log(err);
+              reject(err);
+            }
 
-        client.search(query);
+            fullfill(obj);
+          });
+        });
     }
 
     _addToSolr(docs){
-        // Create a client
-        var client = this.solr.createClient('solr',8983,'assets');
 
         // Switch on "auto commit", by default `client.autoCommit = false`
-        client.autoCommit = true;
+        this.client.autoCommit = true;
 
         // Add documents
-        client.add(docs,function(err,obj){
+        this.client.add(docs,function(err,obj){
+          //console.log(docs[0]);
+
            if(err){
               console.log(err);
            }else{
-              console.log(obj);
+              this.client.commit();
+              docs = [];
            }
         });
-
-        docs = [];
     }
 }
 
